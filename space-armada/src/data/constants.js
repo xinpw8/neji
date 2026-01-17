@@ -2,7 +2,8 @@
 // Extracted from index.html for modularization
 
 // Path to GLB model files
-export const MODEL_PATH = 'assets/models/';
+// Path to GLB models - Vite publicDir serves ../assets at root, so models/ is correct
+export const MODEL_PATH = 'models/';
 
 // Mapping from game ship types to GLB model files
 export const SHIP_MODELS = {

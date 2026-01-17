@@ -229,7 +229,7 @@ export function updateWeaponInfo(currentWeapon) {
  * @param {number} rotation - Player rotation in radians
  */
 export function updateHeadingIndicator(ctx, rotation) {
-    if (!ctx) return;
+    if (!ctx || typeof ctx.fillRect !== 'function') return;
 
     const cx = 50, cy = 50;
     const radius = 40;
@@ -324,7 +324,7 @@ export function updateHeadingIndicator(ctx, rotation) {
  * @param {object} FACTIONS - Faction definitions object
  */
 export function updateMinimap(ctx, playerState, stations, enemies, pickups, currentTarget, FACTIONS) {
-    if (!ctx) return;
+    if (!ctx || typeof ctx.fillRect !== 'function') return;
 
     const scale = 0.06; // Adjusted for smaller minimap
     const cx = 70, cy = 70; // Center of 140x140 canvas
@@ -632,4 +632,121 @@ export function updateCrosshair(x, y) {
         crosshair.style.left = x + 'px';
         crosshair.style.top = y + 'px';
     }
+}
+
+// ============================================================
+// ADDITIONAL HUD FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Hide message display
+ */
+export function hideMessage() {
+    const msg = document.getElementById('message');
+    if (msg) msg.style.display = 'none';
+}
+
+/**
+ * Alias for updateWeaponInfo
+ */
+export function updateWeaponDisplay(weapon) {
+    updateWeaponInfo(weapon);
+}
+
+/**
+ * Show start screen
+ */
+export function showStartScreen() {
+    const startScreen = document.getElementById('startScreen');
+    if (startScreen) startScreen.style.display = 'flex';
+}
+
+/**
+ * Hide gameplay UI
+ */
+export function hideGameplayUI() {
+    const ui = document.getElementById('ui');
+    const minimap = document.getElementById('minimap');
+    const weaponInfo = document.getElementById('weaponInfo');
+    const targetInfo = document.getElementById('targetInfo');
+
+    if (ui) ui.style.display = 'none';
+    if (minimap) minimap.style.display = 'none';
+    if (weaponInfo) weaponInfo.style.display = 'none';
+    if (targetInfo) targetInfo.style.display = 'none';
+}
+
+/**
+ * Show game over screen
+ * @param {object} stats - Game stats (credits, kills, survivalTime)
+ */
+export function showGameOver(stats) {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (gameOverScreen) {
+        gameOverScreen.style.display = 'flex';
+        const statsDiv = gameOverScreen.querySelector('.stats');
+        if (statsDiv && stats) {
+            statsDiv.innerHTML = `
+                <p>Credits: ${stats.credits || 0}</p>
+                <p>Kills: ${stats.kills || 0}</p>
+                <p>Survival Time: ${Math.floor(stats.survivalTime || 0)}s</p>
+            `;
+        }
+    }
+}
+
+/**
+ * Update health bar display
+ * @param {number} current - Current health
+ * @param {number} max - Maximum health
+ */
+export function updateHealthBar(current, max) {
+    const bar = document.getElementById('healthBar');
+    if (bar) {
+        const pct = Math.max(0, Math.min(100, (current / max) * 100));
+        bar.style.width = pct + '%';
+    }
+}
+
+/**
+ * Update shield bar display
+ * @param {number} current - Current shields
+ * @param {number} max - Maximum shields
+ */
+export function updateShieldBar(current, max) {
+    const bar = document.getElementById('shieldBar');
+    if (bar) {
+        const pct = Math.max(0, Math.min(100, (current / max) * 100));
+        bar.style.width = pct + '%';
+    }
+}
+
+/**
+ * Update energy bar display
+ * @param {number} current - Current energy
+ * @param {number} max - Maximum energy
+ */
+export function updateEnergyBar(current, max) {
+    const bar = document.getElementById('energyBar');
+    if (bar) {
+        const pct = Math.max(0, Math.min(100, (current / max) * 100));
+        bar.style.width = pct + '%';
+    }
+}
+
+/**
+ * Initialize HUD elements
+ */
+export function initHUD() {
+    // Initialize any HUD state
+    console.log('HUD initialized');
+}
+
+/**
+ * Dispose/cleanup HUD
+ */
+export function disposeHUD() {
+    // Clean up HUD elements
+    hideMessage();
+    clearTarget();
 }

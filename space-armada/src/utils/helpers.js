@@ -377,3 +377,40 @@ export function getHealthColor(percent) {
     if (percent > 30) return '#eab308';  // Yellow
     return '#ef4444';                     // Red
 }
+
+// ============================================================
+// ADDITIONAL HELPER FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Format distance value
+ * @param {number} distance - Distance value
+ * @returns {string} Formatted distance string
+ */
+export function formatDistance(distance) {
+    if (distance < 1000) {
+        return Math.round(distance) + 'm';
+    } else if (distance < 10000) {
+        return (distance / 1000).toFixed(1) + 'km';
+    } else {
+        return Math.round(distance / 1000) + 'km';
+    }
+}
+
+/**
+ * Generate unique ID
+ * @returns {string} Unique identifier
+ */
+export function generateId() {
+    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+}
+
+/**
+ * Deep merge objects (alias for deepMerge)
+ * @param {object} target - Target object
+ * @param {object} source - Source object
+ * @returns {object} Merged object
+ */
+export function mergeDeep(target, source) {
+    return deepMerge(target, source);
+}

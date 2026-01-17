@@ -384,5 +384,55 @@ export const GAME_CONSTANTS = {
 export function resetAllState() {
     resetPlayerState();
     resetFactionState();
+    resetMissionState();
     setGameRunning(false);
+}
+
+// ============================================================
+// MISSION STATE (for main.js compatibility)
+// ============================================================
+
+/**
+ * Default mission state
+ */
+export const DEFAULT_MISSION_STATE = {
+    activeMission: null,
+    missionProgress: 0,
+    missionTarget: null,
+    missionReward: 0,
+    completedMissions: []
+};
+
+/**
+ * Current mission state
+ */
+export let missionState = { ...DEFAULT_MISSION_STATE };
+
+/**
+ * Reset mission state
+ */
+export function resetMissionState() {
+    missionState = { ...DEFAULT_MISSION_STATE };
+}
+
+// ============================================================
+// ADDITIONAL STATE FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Update faction reputation (alias for modifyReputation)
+ * @param {string} factionId - Faction identifier
+ * @param {number} delta - Change in reputation
+ */
+export function updateFactionReputation(factionId, delta) {
+    modifyReputation(factionId, delta);
+}
+
+/**
+ * Get faction reputation (alias for getReputation)
+ * @param {string} factionId - Faction identifier
+ * @returns {number} Reputation value
+ */
+export function getFactionReputation(factionId) {
+    return getReputation(factionId);
 }

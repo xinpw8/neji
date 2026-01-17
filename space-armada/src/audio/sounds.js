@@ -30,7 +30,7 @@ let musicVolume = 0.5;
 /**
  * Whether audio is muted
  */
-let isMuted = false;
+let _isMuted = false;
 
 // ============================================================
 // SOUND DEFINITIONS
@@ -172,8 +172,8 @@ export function getMusicVolume() {
  * @returns {boolean} New mute state
  */
 export function toggleMute() {
-    isMuted = !isMuted;
-    return isMuted;
+    _isMuted = !_isMuted;
+    return _isMuted;
 }
 
 /**
@@ -181,7 +181,7 @@ export function toggleMute() {
  * @param {boolean} muted
  */
 export function setMuted(muted) {
-    isMuted = muted;
+    _isMuted = muted;
 }
 
 /**
@@ -189,7 +189,7 @@ export function setMuted(muted) {
  * @returns {boolean}
  */
 export function isSoundMuted() {
-    return isMuted;
+    return _isMuted;
 }
 
 /**
@@ -198,7 +198,7 @@ export function isSoundMuted() {
  * @returns {number} Effective volume (0-1)
  */
 export function getEffectiveVolume(category = 'sfx') {
-    if (isMuted) return 0;
+    if (_isMuted) return 0;
     const categoryVolume = category === 'music' ? musicVolume : sfxVolume;
     return masterVolume * categoryVolume;
 }
@@ -214,7 +214,7 @@ export function getEffectiveVolume(category = 'sfx') {
  * @returns {boolean} True if sound was played
  */
 export function playSound(soundId, options = {}) {
-    if (isMuted) return false;
+    if (_isMuted) return false;
 
     const sound = SOUND_EFFECTS[soundId];
     if (!sound) {
@@ -238,7 +238,7 @@ export function playSound(soundId, options = {}) {
  * @returns {boolean} True if sound was played
  */
 export function playPositionalSound(soundId, x, y, listenerX, listenerY, maxDistance = 2000) {
-    if (isMuted) return false;
+    if (_isMuted) return false;
 
     const dx = x - listenerX;
     const dy = y - listenerY;
@@ -279,7 +279,7 @@ export function stopSound(soundId) {
  */
 export function playTone(frequency, duration, waveform = 'sine') {
     const ctx = getAudioContext();
-    if (!ctx || isMuted) return;
+    if (!ctx || _isMuted) return;
 
     try {
         const oscillator = ctx.createOscillator();
@@ -307,7 +307,7 @@ export function playTone(frequency, duration, waveform = 'sine') {
  */
 export function playLaserSound(baseFrequency = 440) {
     const ctx = getAudioContext();
-    if (!ctx || isMuted) return;
+    if (!ctx || _isMuted) return;
 
     try {
         const oscillator = ctx.createOscillator();
@@ -335,7 +335,7 @@ export function playLaserSound(baseFrequency = 440) {
  */
 export function playExplosionSound() {
     const ctx = getAudioContext();
-    if (!ctx || isMuted) return;
+    if (!ctx || _isMuted) return;
 
     try {
         // White noise burst for explosion
@@ -367,4 +367,16 @@ export function playExplosionSound() {
     } catch (e) {
         console.warn('Error playing explosion sound:', e);
     }
+}
+
+// ============================================================
+// ADDITIONAL AUDIO FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Check if audio is muted (alias for isSoundMuted)
+ * @returns {boolean} True if muted
+ */
+export function isMuted() {
+    return isSoundMuted();
 }

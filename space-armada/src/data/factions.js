@@ -92,6 +92,31 @@ export function getFactionEngineColor(faction) {
 // List of all faction identifiers
 export const FACTION_IDS = Object.keys(FACTION_STYLES);
 
+// Human-readable faction names for UI display
+export const FACTION_NAMES = {
+    terranConfederacy: 'Terran Confederacy',
+    unitedEarth: 'United Earth',
+    bhu: 'BHU',
+    galacticPolice: 'Galactic Police',
+    freeCompanies: 'Free Companies',
+    katuri: 'Katuri',
+    gadzair: 'Gadzair',
+    simnuvia: 'Simnuvia',
+    voinian: 'Voinian',
+    emalgha: 'Emalgha',
+    pirates: 'Pirates',
+    renegades: 'Renegades',
+    miranu: 'Miranu',
+    secondRebellion: 'Second Rebellion',
+    cau: 'CAU',
+    theAliens: 'The Aliens',
+    seti: 'SETI',
+    helionova: 'Helionova',
+    kliaphin: 'Kliaphin',
+    talramuv: 'Talramuv',
+    hinwar: 'Hinwar'
+};
+
 // Faction groupings for gameplay logic
 export const FACTION_GROUPS = {
     human: ['terranConfederacy', 'unitedEarth', 'bhu', 'galacticPolice', 'freeCompanies', 'secondRebellion', 'cau'],

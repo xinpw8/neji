@@ -550,3 +550,85 @@ export function initGameScene(container, sectorSize) {
         }
     };
 }
+
+// ============================================================
+// ADDITIONAL SCENE FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Create a single nebula (alias for createNebulae)
+ * @param {THREE.Scene} scene - Scene to add nebula to
+ * @param {number} sectorSize - Size of sector
+ */
+export function createNebula(scene, sectorSize) {
+    return createNebulae(scene, sectorSize);
+}
+
+/**
+ * Update camera position to follow target
+ * @param {THREE.Camera} camera - Camera to update
+ * @param {THREE.Vector3|Object} target - Target position to follow
+ * @param {Object} options - Options (height, smoothing)
+ */
+export function updateCamera(camera, target, options = {}) {
+    if (!camera || !target) return;
+
+    const height = options.height || 500;
+    const smoothing = options.smoothing || 0.1;
+
+    // Get target position
+    const targetX = target.x || (target.position?.x ?? 0);
+    const targetZ = target.z || (target.position?.z ?? 0);
+
+    // Smooth interpolation to target
+    camera.position.x += (targetX - camera.position.x) * smoothing;
+    camera.position.z += (targetZ - camera.position.z) * smoothing;
+    camera.position.y = height;
+
+    // Look at target
+    camera.lookAt(targetX, 0, targetZ);
+}
+
+/**
+ * Resize renderer to match window
+ * @param {THREE.WebGLRenderer} renderer - Renderer to resize
+ * @param {THREE.Camera} camera - Camera to update aspect ratio
+ * @param {HTMLElement} canvas - Canvas element for dimensions
+ */
+export function resizeRenderer(renderer, camera, canvas) {
+    if (!renderer || !camera) return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    renderer.setSize(width, height);
+
+    if (camera.isPerspectiveCamera) {
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    }
+}
+
+/**
+ * Dispose scene and free resources
+ * @param {THREE.Scene} scene - Scene to dispose
+ * @param {THREE.WebGLRenderer} renderer - Renderer to dispose
+ */
+export function disposeScene(scene, renderer) {
+    if (scene) {
+        scene.traverse(object => {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach(m => m.dispose());
+                } else {
+                    object.material.dispose();
+                }
+            }
+        });
+    }
+
+    if (renderer) {
+        renderer.dispose();
+    }
+}

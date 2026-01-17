@@ -244,19 +244,45 @@ export async function preloadModels() {
 
 /**
  * Preload models with a progress callback
- * @param {function(number): void} onProgress - Called with progress percentage (0-100)
+ * @param {string[]|function} modelsOrProgress - Either array of model names OR progress callback
+ * @param {function(number, number): void} [onProgress] - Called with (loaded, total) when first arg is array
  * @returns {Promise<void>} Resolves when all models are loaded
  */
-export async function preloadModelsWithProgress(onProgress) {
+export async function preloadModelsWithProgress(modelsOrProgress, onProgress) {
     console.log('Preloading GLB ship models...');
 
+    // Support both call patterns:
+    // 1. preloadModelsWithProgress(callback) - original
+    // 2. preloadModelsWithProgress(modelNames, callback) - from main.js
+    let models, progressCallback;
+    if (typeof modelsOrProgress === 'function') {
+        models = MODELS_TO_PRELOAD;
+        progressCallback = modelsOrProgress;
+    } else if (Array.isArray(modelsOrProgress)) {
+        models = modelsOrProgress;
+        progressCallback = onProgress;
+    } else {
+        models = MODELS_TO_PRELOAD;
+        progressCallback = null;
+    }
+
     let loaded = 0;
-    for (const model of MODELS_TO_PRELOAD) {
-        await loadGLBModel(model);
+    const total = models.length;
+    for (const model of models) {
+        try {
+            await loadGLBModel(model);
+        } catch (e) {
+            console.warn(`Failed to load model ${model}:`, e);
+        }
         loaded++;
-        modelLoadProgress = (loaded / MODELS_TO_PRELOAD.length) * 100;
-        if (onProgress) {
-            onProgress(modelLoadProgress);
+        modelLoadProgress = (loaded / total) * 100;
+        if (progressCallback) {
+            // Support both (percentage) and (loaded, total) callback patterns
+            if (progressCallback.length >= 2) {
+                progressCallback(loaded, total);
+            } else {
+                progressCallback(modelLoadProgress);
+            }
         }
     }
 
@@ -348,4 +374,56 @@ export function getModelLoadProgress() {
  */
 export function getPreloadModelList() {
     return [...MODELS_TO_PRELOAD];
+}
+
+// ============================================================
+// ADDITIONAL MODEL FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Get a previously loaded model
+ * @param {string} modelName - Model filename
+ * @returns {Object|null} Model or null if not loaded
+ */
+export function getLoadedModel(modelName) {
+    return getCachedModel(modelName);
+}
+
+/**
+ * Check if a model is loaded
+ * @param {string} modelName - Model filename
+ * @returns {boolean}
+ */
+export function isModelLoaded(modelName) {
+    return isModelCached(modelName);
+}
+
+/**
+ * Dispose a single model
+ * @param {string} modelName - Model to dispose
+ */
+export function disposeModel(modelName) {
+    const model = modelCache.get(modelName);
+    if (model) {
+        model.traverse(obj => {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+                if (Array.isArray(obj.material)) {
+                    obj.material.forEach(m => m.dispose());
+                } else {
+                    obj.material.dispose();
+                }
+            }
+        });
+        modelCache.delete(modelName);
+    }
+}
+
+/**
+ * Dispose all loaded models
+ */
+export function disposeAllModels() {
+    for (const [name] of modelCache) {
+        disposeModel(name);
+    }
 }

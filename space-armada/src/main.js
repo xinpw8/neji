@@ -2,6 +2,8 @@
 // Modular version using Vite build system
 // This file imports and coordinates all extracted modules
 
+import * as THREE from 'three';
+
 // ============================================================
 // DATA MODULES
 // ============================================================
@@ -169,7 +171,15 @@ import {
 // ============================================================
 import {
     createUEHullTexture,
+    createCrescentTexture,
+    createVoinianTexture,
+    createKaturiTexture,
+    createPirateTexture,
+    createMiranuTexture,
+    createAlienTexture,
     createEngineGlowTexture,
+    createCockpitTexture,
+    createHullTexture,
     createShieldTexture,
     createExplosionTexture,
     clearTextureCache,
@@ -331,6 +341,18 @@ let gameStartTime = 0;
 // Canvas element
 let canvas = null;
 
+const shipTextureCreators = {
+    ue: createUEHullTexture,
+    crescent: createCrescentTexture,
+    voinian: createVoinianTexture,
+    katuri: createKaturiTexture,
+    pirate: createPirateTexture,
+    miranu: createMiranuTexture,
+    alien: createAlienTexture,
+    cockpit: createCockpitTexture,
+    hull: createHullTexture
+};
+
 // ============================================================
 // INITIALIZATION
 // ============================================================
@@ -486,10 +508,15 @@ async function startGame() {
     }
 
     // Create player ship
-    playerShip = await createPlayerShip(scene, {
-        shipType: playerState.shipType || 'shuttle',
-        position: { x: 0, y: 0, z: 0 }
+    playerShip = await createPlayerShip({
+        THREE,
+        modelCache: { get: getLoadedModel },
+        SHIP_MODELS,
+        textureCreators: shipTextureCreators
     });
+    if (playerShip && playerShip.position) {
+        playerShip.position.set(0, 0, 0);
+    }
 
     // Hide start screen and show gameplay UI
     hideStartScreen();

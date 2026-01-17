@@ -146,6 +146,7 @@ export function updateParticle(particle, dt) {
  * @returns {Array} Filtered array with only living particles
  */
 export function updateParticles(particlesArray, dt, scene) {
+    if (!Array.isArray(particlesArray)) return [];
     return particlesArray.filter(p => {
         const alive = updateParticle(p, dt);
         if (!alive) {
@@ -363,4 +364,89 @@ export function updateDebris(debris, dt) {
     }
 
     return debris.life > 0;
+}
+
+// ============================================================
+// ADDITIONAL PARTICLE FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+// Internal particle tracking
+let allParticles = [];
+
+/**
+ * Create muzzle flash effect
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} angle - Direction angle
+ * @param {object} scene - Three.js scene
+ * @returns {object} Muzzle flash particle
+ */
+export function createMuzzleFlash(x, y, angle, scene) {
+    const flash = {
+        x, y, angle,
+        type: 'flash',
+        life: 0.1,
+        size: 15,
+        color: 0xffff00
+    };
+    allParticles.push(flash);
+    return flash;
+}
+
+/**
+ * Create engine trail particles
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} angle - Direction angle
+ * @param {number} color - Trail color
+ * @param {object} scene - Three.js scene
+ * @returns {object} Trail particle
+ */
+export function createEngineTrail(x, y, angle, color = 0x00ffff, scene = null) {
+    const trail = {
+        x, y, angle,
+        type: 'trail',
+        life: 0.5,
+        size: 5,
+        color
+    };
+    allParticles.push(trail);
+    return trail;
+}
+
+/**
+ * Create shield impact effect
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} angle - Impact angle
+ * @param {object} scene - Three.js scene
+ * @returns {object} Shield impact particle
+ */
+export function createShieldImpact(x, y, angle, scene) {
+    const impact = {
+        x, y, angle,
+        type: 'shield',
+        life: 0.3,
+        size: 30,
+        color: 0x00ffff
+    };
+    allParticles.push(impact);
+    return impact;
+}
+
+/**
+ * Clear all particles (alias for clearAllParticles)
+ * @param {object} scene - Three.js scene
+ */
+export function clearParticles(scene) {
+    clearAllParticles(allParticles, scene);
+    allParticles = [];
+}
+
+/**
+ * Get count of active particles
+ * @returns {number} Number of active particles
+ */
+export function getActiveParticleCount() {
+    return allParticles.length;
 }

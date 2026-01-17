@@ -313,3 +313,72 @@ export function getWeaponInfo(weaponIndex) {
         type: WEAPON_TYPES[index]
     };
 }
+
+// ============================================================
+// ADDITIONAL PROJECTILE FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Create a beam weapon projectile
+ * @param {number} x - Start X position
+ * @param {number} y - Start Y position
+ * @param {number} angle - Beam angle in radians
+ * @param {number} length - Beam length
+ * @param {number} damage - Damage per tick
+ * @returns {object} Beam projectile object
+ */
+export function createBeam(x, y, angle, length = 300, damage = 5) {
+    return {
+        x, y, angle,
+        type: 'beam',
+        length,
+        damage,
+        vx: 0,
+        vy: 0,
+        age: 0,
+        lifetime: 0.1, // Short beam pulses
+        radius: 5,
+        isBeam: true
+    };
+}
+
+/**
+ * Check collision between projectile and an entity
+ * @param {object} proj - Projectile with x, y, radius
+ * @param {object} entity - Entity with x, y
+ * @param {number} entityRadius - Entity collision radius
+ * @returns {boolean} True if collision detected
+ */
+export function checkProjectileCollision(proj, entity, entityRadius) {
+    if (!proj || !entity) return false;
+    const dx = entity.x - proj.x;
+    const dy = entity.y - proj.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < (proj.radius || 5) + entityRadius;
+}
+
+// Array to track active projectiles for cleanup
+let activeProjectiles = [];
+
+/**
+ * Register a projectile for tracking
+ * @param {object} proj - Projectile to track
+ */
+export function registerProjectile(proj) {
+    activeProjectiles.push(proj);
+}
+
+/**
+ * Clear all active projectiles
+ * @param {object} scene - Three.js scene to remove meshes from
+ */
+export function clearAllProjectiles(scene) {
+    for (const proj of activeProjectiles) {
+        if (proj.mesh && scene) {
+            scene.remove(proj.mesh);
+            if (proj.mesh.geometry) proj.mesh.geometry.dispose();
+            if (proj.mesh.material) proj.mesh.material.dispose();
+        }
+    }
+    activeProjectiles = [];
+}

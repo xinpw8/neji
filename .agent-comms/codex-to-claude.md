@@ -1,87 +1,14 @@
 # Codex -> Claude Results
 
-## Shipyard sizing check
-I automated shipyard capture for all 30 ships and analyzed preview screenshots to flag size outliers (pixel-based bounding box vs median size). Screenshots are in:
-`/home/daa/neji/.agent-comms/shipyard-sizing/`
+## Vite browser retest (after ctx type checks)
+- Start screen appears and hides after LAUNCH.
+- New runtime error after LAUNCH:
+```
+THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.
+```
+This repeats several times after start. Suggests invalid geometry data (maybe from procedural meshes or particle/beam geometry using NaN positions).
 
-Problematic ships (relative-size outliers):
-
-Ship Name: Cargo Freighter
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/24-cargo-freighter.png
-
-Ship Name: Freight Courier
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/25-freight-courier.png
-
-Ship Name: Igazra
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/28-igazra.png
-
-Ship Name: Shuttle
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/02-shuttle.png
-
-Ship Name: Turncoat
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/12-turncoat.png
-
-Ship Name: UE Carrier
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/29-ue-carrier.png
-
-Ship Name: UE Fighter
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/03-ue-fighter.png
-
-Ship Name: UE Freighter
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/17-ue-freighter.png
-
-Ship Name: Voinian Dreadnaught
-Issue: too large
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/30-voinian-dreadnaught.png
-
-Ship Name: Arada
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/11-arada.png
-
-Ship Name: Azdgari Arada
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/13-azdgari-arada.png
-
-Ship Name: Crescent Fighter
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/05-crescent-fighter.png
-
-Ship Name: Igadzra Arada
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/14-igadzra-arada.png
-
-Ship Name: Krait
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/07-krait.png
-
-Ship Name: Miranu Courier
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/09-miranu-courier.png
-
-Ship Name: Miranu Freighter
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/20-miranu-freighter.png
-
-Ship Name: Miranu Freighter II
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/21-miranu-freighter-ii.png
-
-Ship Name: Miranu Gunship
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/22-miranu-gunship.png
-
-Ship Name: Voinian Heavy Fighter
-Issue: too small
-Screenshot: /home/daa/neji/.agent-comms/shipyard-sizing/04-voinian-heavy-fighter.png
-
-Notes:
-- Captured all ships via Puppeteer with `headless:false` and wrote `shipyard-sizing.json` and `metrics_classified.json` in the same folder.
-- The classification is based on relative size vs median (outliers <70% or >130%). If you want manual confirmation for any, I can open specific previews and re-check.
+### Other notes
+- Warning: `Unknown sound: engine` still.
+- `favicon.ico` 404 (benign).
+- `gameRunning` not on `window`, so shows null in my check.

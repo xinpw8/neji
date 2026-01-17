@@ -692,3 +692,60 @@ export function clearTextureCache() {
 export function getTextureFromCache(key) {
     return textureCache[key] || null;
 }
+
+// ============================================================
+// ADDITIONAL TEXTURE FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Create a shield effect texture
+ * @param {string} color1 - Primary color (hex string)
+ * @param {string} color2 - Secondary color (hex string)
+ * @returns {HTMLCanvasElement} Canvas with shield texture
+ */
+export function createShieldTexture(color1 = '#00ffff', color2 = '#0088ff') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    // Create radial gradient for shield bubble effect
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'transparent');
+    gradient.addColorStop(0.7, color2 + '40');
+    gradient.addColorStop(0.9, color1 + '80');
+    gradient.addColorStop(1, color1);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+
+    return canvas;
+}
+
+/**
+ * Create an explosion effect texture
+ * @param {string} color1 - Inner color (hex string)
+ * @param {string} color2 - Outer color (hex string)
+ * @returns {HTMLCanvasElement} Canvas with explosion texture
+ */
+export function createExplosionTexture(color1 = '#ffffff', color2 = '#ff6600') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    // Create radial gradient for explosion fireball
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, color1);
+    gradient.addColorStop(0.3, '#ffff00');
+    gradient.addColorStop(0.6, color2);
+    gradient.addColorStop(0.9, '#ff0000');
+    gradient.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(32, 32, 32, 0, Math.PI * 2);
+    ctx.fill();
+
+    return canvas;
+}

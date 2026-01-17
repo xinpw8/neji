@@ -1047,3 +1047,56 @@ export function getPlayerShip() {
 export function setPlayerShip(ship) {
     playerShip = ship;
 }
+
+// ============================================================
+// DOCKING FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Check if player can dock with a station
+ * @param {object} player - Player state with x, y, vx, vy
+ * @param {object} station - Station with x, y
+ * @param {number} range - Maximum docking range
+ * @returns {boolean} True if docking is possible
+ */
+export function canDockWithStation(player, station, range = 100) {
+    if (!player || !station) return false;
+    const dx = station.x - player.x;
+    const dy = station.y - player.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < range;
+}
+
+/**
+ * Start docking sequence with a station
+ * @param {object} station - Station to dock with
+ */
+export function startDocking(station) {
+    setDockingState(true, station);
+    if (deps?.showMessage) {
+        deps.showMessage('Initiating docking sequence...');
+    }
+}
+
+/**
+ * Complete docking and open station menu
+ */
+export function completeDocking() {
+    if (dockingState.station) {
+        openStationMenu();
+        if (deps?.showMessage) {
+            deps.showMessage('Docked successfully.');
+        }
+    }
+}
+
+/**
+ * Undock from current station
+ */
+export function undock() {
+    closeStationMenu();
+    setDockingState(false, null);
+    if (deps?.showMessage) {
+        deps.showMessage('Undocking...');
+    }
+}

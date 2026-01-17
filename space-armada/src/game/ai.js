@@ -472,3 +472,109 @@ export function getCombatRating(kills) {
     }
     return COMBAT_RATINGS[0];
 }
+
+// ============================================================
+// ADDITIONAL AI FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Get the current AI target for an enemy
+ * @param {object} enemy - Enemy entity
+ * @param {object} player - Player entity
+ * @param {array} allies - Allied entities
+ * @returns {object|null} Target entity
+ */
+export function getAITarget(enemy, player, allies = []) {
+    // Default to targeting player if hostile
+    if (enemy.hostile !== false) {
+        return player;
+    }
+    // Otherwise find nearest hostile
+    return findNearestEnemy(allies, { x: enemy.x, y: enemy.y }, 800);
+}
+
+/**
+ * Calculate intercept point for a projectile to hit a moving target
+ * @param {object} shooter - Shooter position with x, y
+ * @param {object} target - Target with x, y, vx, vy
+ * @param {number} projectileSpeed - Speed of the projectile
+ * @returns {{x: number, y: number}} Predicted intercept point
+ */
+export function calculateInterceptPoint(shooter, target, projectileSpeed) {
+    // Simple linear prediction
+    const dx = target.x - shooter.x;
+    const dy = target.y - shooter.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const timeToTarget = dist / projectileSpeed;
+
+    // Predict where target will be
+    const targetVx = target.vx || 0;
+    const targetVy = target.vy || 0;
+
+    return {
+        x: target.x + targetVx * timeToTarget,
+        y: target.y + targetVy * timeToTarget
+    };
+}
+
+/**
+ * Get direction for an enemy to flee from a threat
+ * @param {object} enemy - Enemy position with x, y
+ * @param {object} threat - Threat position with x, y
+ * @returns {{x: number, y: number}} Normalized flee direction
+ */
+export function getFleeDirection(enemy, threat) {
+    const dx = enemy.x - threat.x;
+    const dy = enemy.y - threat.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    return {
+        x: dx / dist,
+        y: dy / dist
+    };
+}
+
+/**
+ * Update formation positions for a group of ships
+ * @param {array} ships - Array of ship entities
+ * @param {object} leader - Formation leader with x, y, rotation
+ * @param {string} formationType - 'wedge', 'line', 'box'
+ * @param {number} spacing - Distance between ships
+ */
+export function updateFormation(ships, leader, formationType = 'wedge', spacing = 50) {
+    if (!ships || ships.length === 0 || !leader) return;
+
+    const cos = Math.cos(leader.rotation || 0);
+    const sin = Math.sin(leader.rotation || 0);
+
+    ships.forEach((ship, index) => {
+        if (!ship || ship === leader) return;
+
+        let offsetX = 0;
+        let offsetY = 0;
+
+        switch (formationType) {
+            case 'wedge':
+                // V-formation behind leader
+                const row = Math.ceil((index + 1) / 2);
+                const side = (index % 2 === 0) ? 1 : -1;
+                offsetX = -row * spacing;
+                offsetY = side * row * spacing * 0.7;
+                break;
+            case 'line':
+                // Line abreast
+                offsetY = (index - ships.length / 2) * spacing;
+                break;
+            case 'box':
+                // Box formation
+                const col = index % 3;
+                const boxRow = Math.floor(index / 3);
+                offsetX = -boxRow * spacing;
+                offsetY = (col - 1) * spacing;
+                break;
+        }
+
+        // Rotate offset to match leader's heading
+        ship.targetX = leader.x + offsetX * cos - offsetY * sin;
+        ship.targetY = leader.y + offsetX * sin + offsetY * cos;
+    });
+}

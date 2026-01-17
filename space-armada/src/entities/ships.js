@@ -22,6 +22,22 @@
 export const SHIP_SCALE = 0.4;
 
 /**
+ * Apply damage to a ship entity.
+ * Placeholder implementation for module compatibility.
+ * TODO: Replace with full damage system once modularized.
+ *
+ * @param {object} ship - Ship entity to damage
+ * @param {number} amount - Damage amount
+ * @returns {boolean} True if ship is destroyed
+ */
+export function applyDamageToShip(ship, amount) {
+    if (!ship || typeof amount !== 'number') return false;
+    if (typeof ship.hull !== 'number') return false;
+    ship.hull = Math.max(0, ship.hull - amount);
+    return ship.hull <= 0;
+}
+
+/**
  * Clone a cached GLB model for use in the game
  * Deep clones materials to allow independent coloring per instance
  *
@@ -1615,4 +1631,88 @@ export function createAlienCapital(group, hullMat, accentMat, engineMat, darkMat
         glow.position.set(x, y, z + 15);
         group.add(glow);
     });
+}
+
+// ============================================================
+// ADDITIONAL SHIP FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Create an NPC ship (non-enemy, civilian/ally)
+ * @param {string} type - Ship type
+ * @param {string} faction - Faction name
+ * @param {object} deps - Dependencies
+ * @returns {object} Ship entity
+ */
+export function createNPCShip(type, faction, deps) {
+    // NPC ships use same creation as enemies but with different behavior
+    return createEnemyShip(type, faction, deps);
+}
+
+/**
+ * Update visual state of a ship
+ * @param {object} ship - Ship entity with mesh
+ * @param {object} state - Visual state (damage level, shields, etc)
+ */
+export function updateShipVisuals(ship, state) {
+    if (!ship || !ship.mesh) return;
+
+    // Update damage visual (darken hull)
+    if (state && typeof state.damageRatio === 'number') {
+        const darken = 1 - (state.damageRatio * 0.5);
+        if (ship.mesh.traverse) {
+            ship.mesh.traverse(child => {
+                if (child.isMesh && child.material) {
+                    child.material.color.multiplyScalar(darken);
+                }
+            });
+        }
+    }
+
+    // Update shield visual
+    if (ship.shieldMesh && state) {
+        ship.shieldMesh.visible = (state.shields || 0) > 0;
+    }
+}
+
+/**
+ * Repair a ship's hull
+ * @param {object} ship - Ship entity
+ * @param {number} amount - Amount to repair
+ */
+export function repairShip(ship, amount) {
+    if (!ship) return;
+    ship.hull = Math.min((ship.hull || 0) + amount, ship.maxHull || 100);
+}
+
+/**
+ * Destroy a ship (visual effect and cleanup)
+ * @param {object} ship - Ship entity
+ * @param {object} scene - Three.js scene
+ */
+export function destroyShip(ship, scene) {
+    if (!ship) return;
+
+    // Remove mesh from scene
+    if (ship.mesh && scene) {
+        scene.remove(ship.mesh);
+
+        // Dispose geometry and materials
+        if (ship.mesh.traverse) {
+            ship.mesh.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                }
+            });
+        }
+    }
+
+    // Mark as destroyed
+    ship.destroyed = true;
+    ship.mesh = null;
 }

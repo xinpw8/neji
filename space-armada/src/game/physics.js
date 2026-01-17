@@ -611,3 +611,131 @@ export function getCombatRating(kills) {
     }
     return COMBAT_RATINGS[0];
 }
+
+// ============================================================
+// ADDITIONAL PHYSICS FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Apply Newtonian physics to an entity
+ * @param {object} entity - Entity with x, y, vx, vy, ax, ay properties
+ * @param {number} dt - Delta time in seconds
+ */
+export function applyNewtonian(entity, dt) {
+    if (entity.ax !== undefined) entity.vx += entity.ax * dt;
+    if (entity.ay !== undefined) entity.vy += entity.ay * dt;
+    entity.x += entity.vx * dt;
+    entity.y += entity.vy * dt;
+}
+
+/**
+ * Update rotation towards target
+ * @param {number} current - Current rotation in radians
+ * @param {number} target - Target rotation in radians
+ * @param {number} rate - Rotation rate per second
+ * @param {number} dt - Delta time
+ * @returns {number} New rotation
+ */
+export function updateRotation(current, target, rate, dt) {
+    const diff = angleDifference(current, target);
+    const maxRotation = rate * dt;
+    if (Math.abs(diff) <= maxRotation) return target;
+    return current + Math.sign(diff) * maxRotation;
+}
+
+/**
+ * Check collision between two rectangles
+ * @param {object} rect1 - First rectangle with x, y, width, height
+ * @param {object} rect2 - Second rectangle with x, y, width, height
+ * @returns {boolean} True if colliding
+ */
+export function checkRectCollision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+/**
+ * Resolve collision between two entities (push apart)
+ * @param {object} entity1 - First entity
+ * @param {object} entity2 - Second entity
+ * @param {number} minDist - Minimum distance to maintain
+ */
+export function resolveCollision(entity1, entity2, minDist) {
+    const dx = entity2.x - entity1.x;
+    const dy = entity2.y - entity1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const overlap = minDist - dist;
+    if (overlap > 0) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        entity1.x -= nx * overlap * 0.5;
+        entity1.y -= ny * overlap * 0.5;
+        entity2.x += nx * overlap * 0.5;
+        entity2.y += ny * overlap * 0.5;
+    }
+}
+
+/**
+ * Get collision normal between two entities
+ * @param {object} entity1 - First entity with x, y
+ * @param {object} entity2 - Second entity with x, y
+ * @returns {{x: number, y: number}} Normalized collision normal
+ */
+export function getCollisionNormal(entity1, entity2) {
+    const dx = entity2.x - entity1.x;
+    const dy = entity2.y - entity1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { x: dx / dist, y: dy / dist };
+}
+
+/**
+ * Apply collision response (bounce)
+ * @param {object} entity - Entity with vx, vy
+ * @param {{x: number, y: number}} normal - Collision normal
+ * @param {number} restitution - Bounce factor (0-1)
+ */
+export function applyCollisionResponse(entity, normal, restitution = 0.8) {
+    const dotProduct = entity.vx * normal.x + entity.vy * normal.y;
+    entity.vx -= (1 + restitution) * dotProduct * normal.x;
+    entity.vy -= (1 + restitution) * dotProduct * normal.y;
+}
+
+/**
+ * Calculate impact damage based on relative velocity
+ * @param {object} entity1 - First entity with vx, vy, mass
+ * @param {object} entity2 - Second entity with vx, vy, mass
+ * @returns {number} Impact damage value
+ */
+export function calculateImpact(entity1, entity2) {
+    const relVx = entity1.vx - (entity2.vx || 0);
+    const relVy = entity1.vy - (entity2.vy || 0);
+    const relSpeed = Math.sqrt(relVx * relVx + relVy * relVy);
+    const mass1 = entity1.mass || 1;
+    const mass2 = entity2.mass || 1;
+    return relSpeed * (mass1 + mass2) * 0.1;
+}
+
+/**
+ * Check if entity is in range of target
+ * @param {object} entity - Entity with x, y
+ * @param {object} target - Target with x, y
+ * @param {number} range - Maximum range
+ * @returns {boolean} True if in range
+ */
+export function isInRange(entity, target, range) {
+    return distance(entity.x, entity.y, target.x, target.y) <= range;
+}
+
+/**
+ * Get squared distance between two entities (faster than distance)
+ * @param {object} entity1 - First entity with x, y
+ * @param {object} entity2 - Second entity with x, y
+ * @returns {number} Squared distance
+ */
+export function getDistanceSquared(entity1, entity2) {
+    const dx = entity2.x - entity1.x;
+    const dy = entity2.y - entity1.y;
+    return dx * dx + dy * dy;
+}

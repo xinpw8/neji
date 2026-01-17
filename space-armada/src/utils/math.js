@@ -406,3 +406,61 @@ export function circlesOverlap(x1, y1, r1, x2, y2, r2) {
 export function pointInRect(px, py, rx, ry, rw, rh) {
     return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
 }
+
+// ============================================================
+// ADDITIONAL MATH FUNCTIONS (for main.js compatibility)
+// ============================================================
+
+/**
+ * Random choice from array (alias for randomElement)
+ * @param {Array} array - Array to choose from
+ * @returns {*} Random element
+ */
+export function randomChoice(array) {
+    return randomElement(array);
+}
+
+/**
+ * Shuffle an array in place (Fisher-Yates)
+ * @param {Array} array - Array to shuffle
+ * @returns {Array} Shuffled array
+ */
+export function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+/**
+ * 2D cross product (alias for cross)
+ * @param {number} x1 - First vector X
+ * @param {number} y1 - First vector Y
+ * @param {number} x2 - Second vector X
+ * @param {number} y2 - Second vector Y
+ * @returns {number} Cross product scalar
+ */
+export function cross2D(x1, y1, x2, y2) {
+    return cross(x1, y1, x2, y2);
+}
+
+/**
+ * Rotate a point around origin (alias for rotateVector)
+ * @param {number} x - Point X
+ * @param {number} y - Point Y
+ * @param {number} angle - Rotation angle in radians
+ * @returns {Object} Rotated point {x, y}
+ */
+export function rotatePoint(x, y, angle) {
+    return rotateVector(x, y, angle);
+}
+
+/**
+ * Ease in-out function (alias for easeInOutQuad)
+ * @param {number} t - Input value (0-1)
+ * @returns {number} Eased value
+ */
+export function easeInOut(t) {
+    return easeInOutQuad(t);
+}
