@@ -1,0 +1,182 @@
+[
+  {
+    "key": "scoutship",
+    "name": "Scoutship",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/01-scoutship.png"
+  },
+  {
+    "key": "shuttle",
+    "name": "Shuttle",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/02-shuttle.png"
+  },
+  {
+    "key": "ue_fighter",
+    "name": "UE Fighter",
+    "selected": true,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/03-ue-fighter.png"
+  },
+  {
+    "key": "voinian_heavy_fighter",
+    "name": "Voinian Heavy Fighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/04-voinian-heavy-fighter.png"
+  },
+  {
+    "key": "crescent_fighter",
+    "name": "Crescent Fighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/05-crescent-fighter.png"
+  },
+  {
+    "key": "azdara",
+    "name": "Azdara",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/06-azdara.png"
+  },
+  {
+    "key": "krait",
+    "name": "Krait",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/07-krait.png"
+  },
+  {
+    "key": "emalgha_fighter",
+    "name": "Emalgha Fighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/08-emalgha-fighter.png"
+  },
+  {
+    "key": "miranu_courier",
+    "name": "Miranu Courier",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/09-miranu-courier.png"
+  },
+  {
+    "key": "escape_pod",
+    "name": "Escape Pod",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/10-escape-pod.png"
+  },
+  {
+    "key": "arada",
+    "name": "Arada",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/11-arada.png"
+  },
+  {
+    "key": "turncoat",
+    "name": "Turncoat",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/12-turncoat.png"
+  },
+  {
+    "key": "azdgari_arada",
+    "name": "Azdgari Arada",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/13-azdgari-arada.png"
+  },
+  {
+    "key": "igadzra_arada",
+    "name": "Igadzra Arada",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/14-igadzra-arada.png"
+  },
+  {
+    "key": "lazira",
+    "name": "Lazira",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/15-lazira.png"
+  },
+  {
+    "key": "helian",
+    "name": "Helian",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/16-helian.png"
+  },
+  {
+    "key": "ue_freighter",
+    "name": "UE Freighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/17-ue-freighter.png"
+  },
+  {
+    "key": "voinian_frigate",
+    "name": "Voinian Frigate",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/18-voinian-frigate.png"
+  },
+  {
+    "key": "voinian_cruiser",
+    "name": "Voinian Cruiser",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/19-voinian-cruiser.png"
+  },
+  {
+    "key": "miranu_freighter",
+    "name": "Miranu Freighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/20-miranu-freighter.png"
+  },
+  {
+    "key": "miranu_freighter_ii",
+    "name": "Miranu Freighter II",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/21-miranu-freighter-ii.png"
+  },
+  {
+    "key": "miranu_gunship",
+    "name": "Miranu Gunship",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/22-miranu-gunship.png"
+  },
+  {
+    "key": "emalgha_freighter",
+    "name": "Emalgha Freighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/23-emalgha-freighter.png"
+  },
+  {
+    "key": "cargo_freighter",
+    "name": "Cargo Freighter",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/24-cargo-freighter.png"
+  },
+  {
+    "key": "freight_courier",
+    "name": "Freight Courier",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/25-freight-courier.png"
+  },
+  {
+    "key": "azdgari_warship",
+    "name": "Azdgari Warship",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/26-azdgari-warship.png"
+  },
+  {
+    "key": "crescent_warship",
+    "name": "Crescent Warship",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/27-crescent-warship.png"
+  },
+  {
+    "key": "igazra",
+    "name": "Igazra",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/28-igazra.png"
+  },
+  {
+    "key": "ue_carrier",
+    "name": "UE Carrier",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/29-ue-carrier.png"
+  },
+  {
+    "key": "voinian_dreadnaught",
+    "name": "Voinian Dreadnaught",
+    "selected": false,
+    "file": "/home/daa/neji/.agent-comms/shipyard-sizing/30-voinian-dreadnaught.png"
+  }
+]
