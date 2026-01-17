@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Catch the Stars!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #1a0033, #000022);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #ffdd00;
+            text-shadow: 0 0 20px #ff8800, 0 0 40px #ff4400;
+            margin: 20px;
+            font-size: 3em;
+        }
+
+        #score {
+            color: #00ffaa;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ffaa;
+        }
+
+        #gameArea {
+            width: 800px;
+            height: 500px;
+            background: linear-gradient(to bottom, #000033, #000011);
+            border: 5px solid #ff00ff;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px #ff00ff, inset 0 0 50px rgba(0,0,100,0.5);
+        }
+
+        #basket {
+            width: 100px;
+            height: 60px;
+            position: absolute;
+            bottom: 10px;
+            left: 350px;
+            font-size: 60px;
+            text-align: center;
+            line-height: 60px;
+            cursor: pointer;
+            transition: left 0.05s;
+        }
+
+        .star {
+            position: absolute;
+            font-size: 40px;
+            animation: twinkle 0.3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
+        .caught {
+            animation: celebrate 0.5s forwards;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        #startBtn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            background: linear-gradient(to bottom, #ff6600, #ff3300);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive;
+            box-shadow: 0 5px 20px rgba(255,100,0,0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #startBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 30px rgba(255,100,0,0.8);
+        }
+
+        #message {
+            color: #ffff00;
+            font-size: 2em;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #ffaa00;
+            height: 40px;
+        }
+
+        .background-star {
+            position: absolute;
+            color: white;
+            opacity: 0.3;
+            font-size: 10px;
+            animation: bgTwinkle 2s infinite alternate;
+        }
+
+        @keyframes bgTwinkle {
+            from { opacity: 0.1; }
+            to { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Catch the Stars!</h1>
+    <div id="score">Stars: 0</div>
+    <div id="gameArea">
+        <div id="basket">🧺</div>
+    </div>
+    <button id="startBtn">START GAME!</button>
+    <div id="message"></div>
+
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const basket = document.getElementById('basket');
+        const scoreDisplay = document.getElementById('score');
+        const startBtn = document.getElementById('startBtn');
+        const message = document.getElementById('message');
+
+        let score = 0;
+        let gameRunning = false;
+        let basketX = 350;
+        let starInterval;
+        let moveInterval;
+        let keys = {};
+
+        // Add background stars
+        for (let i = 0; i < 50; i++) {
+            const bgStar = document.createElement('div');
+            bgStar.className = 'background-star';
+            bgStar.textContent = '✦';
+            bgStar.style.left = Math.random() * 780 + 'px';
+            bgStar.style.top = Math.random() * 480 + 'px';
+            bgStar.style.animationDelay = Math.random() * 2 + 's';
+            gameArea.appendChild(bgStar);
+        }
+
+        // Star types with different points
+        const starTypes = [
+            { emoji: '⭐', points: 1, color: '#ffdd00' },
+            { emoji: '🌟', points: 2, color: '#ffaa00' },
+            { emoji: '💫', points: 3, color: '#ff66ff' },
+            { emoji: '✨', points: 1, color: '#00ffff' },
+            { emoji: '🎀', points: 5, color: '#ff69b4' },
+            { emoji: '🍭', points: 3, color: '#ff6600' },
+            { emoji: '🦋', points: 4, color: '#9966ff' },
+        ];
+
+        function createStar() {
+            if (!gameRunning) return;
+
+            const star = document.createElement('div');
+            star.className = 'star';
+
+            const starType = starTypes[Math.floor(Math.random() * starTypes.length)];
+            star.textContent = starType.emoji;
+            star.dataset.points = starType.points;
+
+            star.style.left = Math.random() * 750 + 'px';
+            star.style.top = '-40px';
+
+            gameArea.appendChild(star);
+
+            let starY = -40;
+            const speed = 2 + Math.random() * 3;
+
+            const fall = setInterval(() => {
+                if (!gameRunning) {
+                    clearInterval(fall);
+                    star.remove();
+                    return;
+                }
+
+                starY += speed;
+                star.style.top = starY + 'px';
+
+                // Check if caught
+                const starX = parseInt(star.style.left);
+                if (starY > 420 && starY < 490) {
+                    if (starX > basketX - 30 && starX < basketX + 80) {
+                        // Caught!
+                        const points = parseInt(star.dataset.points);
+                        score += points;
+                        scoreDisplay.textContent = 'Stars: ' + score;
+                        star.classList.add('caught');
+                        clearInterval(fall);
+
+                        // Show bonus message for special catches
+                        if (points >= 3) {
+                            showMessage('WOW! +' + points + '!');
+                        }
+
+                        setTimeout(() => star.remove(), 500);
+
+                        // Play a fun sound effect (visual feedback)
+                        basket.style.transform = 'scale(1.2)';
+                        setTimeout(() => basket.style.transform = 'scale(1)', 100);
+                    }
+                }
+
+                // Missed
+                if (starY > 520) {
+                    clearInterval(fall);
+                    star.remove();
+                }
+            }, 20);
+        }
+
+        function showMessage(text) {
+            message.textContent = text;
+            message.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                message.style.transform = 'scale(1)';
+            }, 200);
+            setTimeout(() => {
+                message.textContent = '';
+            }, 1000);
+        }
+
+        function moveBasket() {
+            if (keys['ArrowLeft'] || keys['a']) {
+                basketX = Math.max(0, basketX - 12);
+            }
+            if (keys['ArrowRight'] || keys['d']) {
+                basketX = Math.min(700, basketX + 12);
+            }
+            basket.style.left = basketX + 'px';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Mouse/touch control
+        gameArea.addEventListener('mousemove', (e) => {
+            if (!gameRunning) return;
+            const rect = gameArea.getBoundingClientRect();
+            basketX = e.clientX - rect.left - 50;
+            basketX = Math.max(0, Math.min(700, basketX));
+            basket.style.left = basketX + 'px';
+        });
+
+        gameArea.addEventListener('touchmove', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const rect = gameArea.getBoundingClientRect();
+            basketX = e.touches[0].clientX - rect.left - 50;
+            basketX = Math.max(0, Math.min(700, basketX));
+            basket.style.left = basketX + 'px';
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (gameRunning) return;
+
+            gameRunning = true;
+            score = 0;
+            scoreDisplay.textContent = 'Stars: 0';
+            startBtn.textContent = 'PLAYING...';
+            message.textContent = 'Catch the stars!';
+
+            // Start spawning stars
+            starInterval = setInterval(createStar, 800);
+
+            // Start movement loop
+            moveInterval = setInterval(moveBasket, 16);
+
+            // Game lasts 60 seconds
+            setTimeout(() => {
+                gameRunning = false;
+                clearInterval(starInterval);
+                clearInterval(moveInterval);
+                startBtn.textContent = 'PLAY AGAIN!';
+
+                // Remove remaining stars
+                document.querySelectorAll('.star').forEach(s => s.remove());
+
+                // Show final message
+                if (score >= 50) {
+                    message.textContent = 'AMAZING! You caught ' + score + ' stars!';
+                } else if (score >= 30) {
+                    message.textContent = 'GREAT JOB! ' + score + ' stars!';
+                } else if (score >= 15) {
+                    message.textContent = 'NICE! ' + score + ' stars!';
+                } else {
+                    message.textContent = 'You got ' + score + ' stars! Try again!';
+                }
+            }, 60000);
+        });
+    </script>
+</body>
+</html>

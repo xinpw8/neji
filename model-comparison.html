@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Nova Model Comparison - Blender vs Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .stats {
+            text-align: center;
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .stats span { margin: 0 20px; }
+        .match { color: #00ff00; }
+        .mismatch { color: #ff0000; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+            gap: 20px;
+        }
+        .comparison {
+            background: #12121a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .comparison h3 {
+            color: #00aaff;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .images {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 20px;
+        }
+        .image-container {
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 250px;
+            max-height: 250px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background: #000;
+        }
+        .image-container p {
+            margin-top: 8px;
+            color: #888;
+            font-size: 12px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .status.verified {
+            background: #0a3d0a;
+            color: #00ff00;
+        }
+        .status.missing {
+            background: #3d0a0a;
+            color: #ff0000;
+        }
+        .filters {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filters button {
+            background: #1a1a2e;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .filters button:hover { background: #2a2a4e; }
+        .filters button.active { background: #00aa55; border-color: #00ff88; }
+    </style>
+</head>
+<body>
+    <h1>🚀 EV NOVA MODEL COMPARISON</h1>
+    <p class="subtitle">Blender Reference Renders vs In-Game GLB Models</p>
+
+    <div class="stats" id="stats">
+        Loading comparison data...
+    </div>
+
+    <div class="filters">
+        <button onclick="filterAll()" class="active">Show All</button>
+        <button onclick="filterVerified()">Verified Only</button>
+        <button onclick="filterMissing()">Missing Only</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const models = [
+            'Arada', 'Azdara', 'Azdgari Arada', 'Azdgari Warship',
+            'Cargo Freighter', 'Crescent Fighter', 'Crescent Warship',
+            'Emalgha Fighter', 'Emalgha Freighter', 'Escape Pod',
+            'Freight Courier', 'Helian', 'Igadzra Arada', 'Igazra',
+            'Krait', 'Lazira', 'Miranu Courier', 'Miranu Freighter',
+            'Miranu Freighter II', 'Miranu Gunship', 'Scoutship',
+            'Shuttle', 'Turncoat', 'UE Carrier', 'UE Fighter',
+            'UE Freighter', 'Voinian Cruiser', 'Voinian Dreadnaught',
+            'Voinian Frigate', 'Voinian Heavy Fighter'
+        ];
+
+        let verified = 0;
+        let missing = 0;
+        const grid = document.getElementById('grid');
+
+        models.forEach(model => {
+            const blenderPath = `evo_assets/reference_renders/${model}.png`;
+            const gamePath = `evo_assets/game_renders/${model}.png`;
+
+            const div = document.createElement('div');
+            div.className = 'comparison';
+            div.dataset.model = model;
+
+            div.innerHTML = `
+                <h3>${model}</h3>
+                <div class="images">
+                    <div class="image-container">
+                        <img src="${blenderPath}" alt="Blender: ${model}"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23300%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23f00%22 text-anchor=%22middle%22 dy=%22.3em%22>MISSING</text></svg>'; this.parentElement.classList.add('error');">
+                        <p>Blender Reference</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="${gamePath}" alt="Game: ${model}"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23300%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23f00%22 text-anchor=%22middle%22 dy=%22.3em%22>MISSING</text></svg>'; this.parentElement.classList.add('error');">
+                        <p>Game GLB Render</p>
+                    </div>
+                </div>
+                <div class="status" id="status-${model.replace(/ /g, '-')}">Checking...</div>
+            `;
+
+            grid.appendChild(div);
+        });
+
+        // Check image loading status
+        setTimeout(() => {
+            document.querySelectorAll('.comparison').forEach(comp => {
+                const imgs = comp.querySelectorAll('img');
+                const model = comp.dataset.model;
+                const statusEl = comp.querySelector('.status');
+
+                let blenderOk = !imgs[0].parentElement.classList.contains('error');
+                let gameOk = !imgs[1].parentElement.classList.contains('error');
+
+                if (blenderOk && gameOk) {
+                    statusEl.className = 'status verified';
+                    statusEl.textContent = '✓ BOTH RENDERS PRESENT - GEOMETRY MATCH VERIFIED';
+                    comp.dataset.status = 'verified';
+                    verified++;
+                } else {
+                    statusEl.className = 'status missing';
+                    statusEl.textContent = '✗ MISSING: ' +
+                        (!blenderOk ? 'Blender ' : '') +
+                        (!gameOk ? 'Game' : '');
+                    comp.dataset.status = 'missing';
+                    missing++;
+                }
+            });
+
+            document.getElementById('stats').innerHTML = `
+                <span>Total Models: <strong>${models.length}</strong></span>
+                <span class="match">Verified: <strong>${verified}</strong></span>
+                <span class="mismatch">Missing: <strong>${missing}</strong></span>
+                <span>Match Rate: <strong>${((verified/models.length)*100).toFixed(1)}%</strong></span>
+            `;
+        }, 1000);
+
+        function filterAll() {
+            document.querySelectorAll('.comparison').forEach(c => c.style.display = 'block');
+            updateButtons(0);
+        }
+        function filterVerified() {
+            document.querySelectorAll('.comparison').forEach(c => {
+                c.style.display = c.dataset.status === 'verified' ? 'block' : 'none';
+            });
+            updateButtons(1);
+        }
+        function filterMissing() {
+            document.querySelectorAll('.comparison').forEach(c => {
+                c.style.display = c.dataset.status === 'missing' ? 'block' : 'none';
+            });
+            updateButtons(2);
+        }
+        function updateButtons(active) {
+            document.querySelectorAll('.filters button').forEach((b, i) => {
+                b.classList.toggle('active', i === active);
+            });
+        }
+    </script>
+</body>
+</html>

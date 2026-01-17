@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Epic Maze Adventure!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+            transition: background 1s;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        h1 {
+            color: #fff;
+            text-shadow: 3px 3px 0 #ff6b6b, 6px 6px 0 #4ecdc4, 0 0 30px rgba(255,255,255,0.5);
+            font-size: 3.5em;
+            margin-bottom: 5px;
+            animation: titleFloat 3s ease-in-out infinite;
+            letter-spacing: 3px;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        #subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        #level {
+            color: #ffeb3b;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #333, 0 0 20px #ffeb3b;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #themeTitle {
+            color: #fff;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px currentColor;
+            opacity: 0.9;
+        }
+
+        #gameContainer {
+            background: rgba(20, 20, 40, 0.95);
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow:
+                0 15px 50px rgba(0,0,0,0.5),
+                0 0 80px rgba(100,200,255,0.2),
+                inset 0 0 30px rgba(255,255,255,0.1);
+            border: 4px solid;
+            border-image: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffeb3b, #ff6b6b) 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #gameContainer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent 30%);
+            animation: shimmer 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #maze {
+            display: grid;
+            gap: 1px;
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cell {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .wall {
+            box-shadow:
+                inset 3px 3px 8px rgba(255,255,255,0.2),
+                inset -3px -3px 8px rgba(0,0,0,0.4),
+                0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .path {
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .path::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .player {
+            animation: playerBounce 0.4s infinite alternate;
+            filter: drop-shadow(0 0 10px rgba(255,255,0,0.8));
+            z-index: 10;
+        }
+
+        @keyframes playerBounce {
+            from { transform: scale(1) translateY(0); }
+            to { transform: scale(1.15) translateY(-3px); }
+        }
+
+        .goal {
+            animation: goalGlow 0.6s infinite alternate;
+            filter: drop-shadow(0 0 15px gold);
+        }
+
+        @keyframes goalGlow {
+            from { transform: scale(1) rotate(-5deg); filter: brightness(1) drop-shadow(0 0 10px gold); }
+            to { transform: scale(1.25) rotate(5deg); filter: brightness(1.4) drop-shadow(0 0 25px gold); }
+        }
+
+        .coin {
+            animation: coinFloat 1s infinite ease-in-out;
+        }
+
+        @keyframes coinFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.1); }
+        }
+
+        .powerup {
+            animation: powerupPulse 0.8s infinite;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        @keyframes powerupPulse {
+            0%, 100% { transform: scale(1); filter: hue-rotate(0deg); }
+            50% { transform: scale(1.2); filter: hue-rotate(30deg); }
+        }
+
+        .collected {
+            animation: collect 0.4s forwards;
+        }
+
+        @keyframes collect {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.8) rotate(180deg); }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        #stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 25px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 1.3em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-value {
+            color: #4ecdc4;
+            font-weight: bold;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        #message {
+            color: #fff;
+            font-size: 1.4em;
+            margin-top: 15px;
+            text-align: center;
+            min-height: 35px;
+            text-shadow: 0 0 15px currentColor;
+            transition: all 0.3s;
+        }
+
+        #controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 30px;
+            background: linear-gradient(145deg, #667eea, #5a6fd6);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 18px;
+            cursor: pointer;
+            color: white;
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.4),
+                inset 0 2px 10px rgba(255,255,255,0.3);
+            transition: all 0.15s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.5),
+                inset 0 2px 15px rgba(255,255,255,0.4),
+                0 0 20px rgba(102,126,234,0.5);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            box-shadow:
+                0 3px 10px rgba(0,0,0,0.4),
+                inset 0 2px 5px rgba(255,255,255,0.2);
+        }
+
+        #winScreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #winScreen.show {
+            display: flex;
+        }
+
+        #winScreen h2 {
+            color: #ffeb3b;
+            font-size: 4.5em;
+            text-shadow: 0 0 30px #ff6b6b, 0 0 60px #ff6b6b;
+            animation: winBounce 0.5s infinite alternate;
+        }
+
+        @keyframes winBounce {
+            from { transform: scale(1) rotate(-3deg); text-shadow: 0 0 30px #ff6b6b; }
+            to { transform: scale(1.1) rotate(3deg); text-shadow: 0 0 60px #ffeb3b, 0 0 100px #ff6b6b; }
+        }
+
+        #winStats {
+            color: #fff;
+            font-size: 1.8em;
+            margin-top: 20px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        #winStats span {
+            color: #4ecdc4;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        #nextBtn {
+            margin-top: 30px;
+            padding: 20px 60px;
+            font-size: 2em;
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 30px rgba(78,205,196,0.3);
+            transition: all 0.3s;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        #nextBtn:hover {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 50px rgba(78,205,196,0.5);
+        }
+
+        .confetti {
+            position: fixed;
+            font-size: 35px;
+            animation: confettiFall linear forwards;
+            z-index: 1001;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(1080deg) scale(0.5); opacity: 0; }
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: particleFade 1s forwards;
+            z-index: 100;
+        }
+
+        @keyframes particleFade {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        #progressBar {
+            width: 100%;
+            max-width: 400px;
+            height: 25px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            margin-top: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 3px 10px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        #progressFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffeb3b, #4ecdc4);
+            border-radius: 15px;
+            transition: width 0.5s;
+            box-shadow: 0 0 20px rgba(255,200,100,0.5);
+            position: relative;
+        }
+
+        #progressFill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+            border-radius: 15px 15px 0 0;
+        }
+
+        #progressText {
+            color: #fff;
+            font-size: 0.9em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        /* Theme-specific styles */
+        .theme-forest .wall { background: linear-gradient(145deg, #2d5a27, #1e3d1a); }
+        .theme-forest .path { background: rgba(34, 85, 34, 0.3); }
+
+        .theme-ocean .wall { background: linear-gradient(145deg, #1a5276, #0e3d5a); }
+        .theme-ocean .path { background: rgba(20, 60, 100, 0.3); }
+
+        .theme-candy .wall { background: linear-gradient(145deg, #ff69b4, #ff1493); }
+        .theme-candy .path { background: rgba(255, 105, 180, 0.2); }
+
+        .theme-space .wall { background: linear-gradient(145deg, #2c1654, #1a0d33); }
+        .theme-space .path { background: rgba(30, 20, 60, 0.4); }
+
+        .theme-lava .wall { background: linear-gradient(145deg, #8b0000, #5c0000); }
+        .theme-lava .path { background: rgba(100, 20, 0, 0.3); }
+
+        .theme-ice .wall { background: linear-gradient(145deg, #87ceeb, #5fb3d4); }
+        .theme-ice .path { background: rgba(135, 206, 235, 0.2); }
+
+        .theme-desert .wall { background: linear-gradient(145deg, #daa520, #b8860b); }
+        .theme-desert .path { background: rgba(210, 180, 100, 0.2); }
+
+        .theme-magic .wall { background: linear-gradient(145deg, #9400d3, #6a0dad); }
+        .theme-magic .path { background: rgba(100, 0, 150, 0.3); }
+
+        .theme-jungle .wall { background: linear-gradient(145deg, #228b22, #006400); }
+        .theme-jungle .path { background: rgba(0, 80, 0, 0.3); }
+
+        .theme-crystal .wall { background: linear-gradient(145deg, #e0ffff, #b0e0e6); }
+        .theme-crystal .path { background: rgba(200, 240, 255, 0.2); }
+
+        #minimap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+            padding: 5px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        #minimapCanvas {
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+
+    <h1>Epic Maze Adventure!</h1>
+    <div id="subtitle">Can you find your way through all the worlds?</div>
+    <div id="level">Level 1</div>
+    <div id="themeTitle">The Enchanted Forest</div>
+
+    <div id="gameContainer">
+        <div id="maze"></div>
+        <canvas id="minimapCanvas" width="100" height="100"></canvas>
+    </div>
+
+    <div id="stats">
+        <div class="stat">⭐ Stars: <span class="stat-value" id="starsCount">0</span></div>
+        <div class="stat">💎 Gems: <span class="stat-value" id="gemsCount">0</span></div>
+        <div class="stat">🏆 Level: <span class="stat-value" id="levelNum">1</span>/<span id="totalLevels">12</span></div>
+    </div>
+
+    <div id="progressBar">
+        <div id="progressFill" style="width: 0%"></div>
+    </div>
+    <div id="progressText">Adventure Progress: 0%</div>
+
+    <div id="message">Use arrow keys or buttons to move! Find the treasure!</div>
+
+    <div id="controls">
+        <div class="control-row">
+            <button class="control-btn" onclick="move(0, -1)">⬆️</button>
+        </div>
+        <div class="control-row">
+            <button class="control-btn" onclick="move(-1, 0)">⬅️</button>
+            <button class="control-btn" onclick="move(0, 1)">⬇️</button>
+            <button class="control-btn" onclick="move(1, 0)">➡️</button>
+        </div>
+    </div>
+
+    <div id="winScreen">
+        <h2 id="winTitle">🎉 LEVEL COMPLETE! 🎉</h2>
+        <div id="winStats"></div>
+        <button id="nextBtn" onclick="nextLevel()">Next Level!</button>
+    </div>
+
+    <script>
+        const mazeElement = document.getElementById('maze');
+        const messageElement = document.getElementById('message');
+        const levelElement = document.getElementById('level');
+        const winScreen = document.getElementById('winScreen');
+        const winStats = document.getElementById('winStats');
+        const winTitle = document.getElementById('winTitle');
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const minimapCanvas = document.getElementById('minimapCanvas');
+        const minimapCtx = minimapCanvas.getContext('2d');
+
+        let currentLevel = 0;
+        let playerX, playerY;
+        let maze;
+        let totalStars = 0;
+        let totalGems = 0;
+        let levelStars = 0;
+        let levelGems = 0;
+
+        // Resize background canvas
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Fun characters for player
+        const playerChars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐸', '🦁', '🐯', '🐨', '🐵', '🦄', '🐲'];
+
+        // Themes for each world
+        const themes = [
+            { name: 'The Enchanted Forest', class: 'theme-forest', bg: ['#1a4314', '#0d2b0a'], wall: '🌲', player: '🐰' },
+            { name: 'Deep Ocean Adventure', class: 'theme-ocean', bg: ['#0a2a4a', '#051525'], wall: '🪨', player: '🐠' },
+            { name: 'Candy Kingdom', class: 'theme-candy', bg: ['#4a1a3a', '#2d0d24'], wall: '🍬', player: '🐱' },
+            { name: 'Outer Space', class: 'theme-space', bg: ['#0d0221', '#000010'], wall: '🪐', player: '👨‍🚀' },
+            { name: 'Volcano World', class: 'theme-lava', bg: ['#3d0c02', '#1a0500'], wall: '🌋', player: '🐲' },
+            { name: 'Ice Kingdom', class: 'theme-ice', bg: ['#1a3a4a', '#0d2030'], wall: '🧊', player: '🐧' },
+            { name: 'Golden Desert', class: 'theme-desert', bg: ['#4a3a1a', '#2d200d'], wall: '🏜️', player: '🐪' },
+            { name: 'Magic Realm', class: 'theme-magic', bg: ['#2a0a3a', '#150520'], wall: '✨', player: '🧙' },
+            { name: 'Wild Jungle', class: 'theme-jungle', bg: ['#0a2a0a', '#051505'], wall: '🌴', player: '🐒' },
+            { name: 'Crystal Caves', class: 'theme-crystal', bg: ['#1a2a3a', '#0d1520'], wall: '💎', player: '🦊' },
+            { name: 'Rainbow World', class: 'theme-magic', bg: ['#2a1a3a', '#1a0a2a'], wall: '🌈', player: '🦄' },
+            { name: 'Final Challenge', class: 'theme-lava', bg: ['#1a0a0a', '#0a0505'], wall: '👑', player: '🏆' }
+        ];
+
+        // 0=path, 1=wall, 2=player start, 3=goal, 4=star, 5=gem
+        const levels = [
+            // Level 1 - 11x11 Easy Forest
+            [
+                [1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,4,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,0,1,0,1],
+                [1,0,0,0,1,0,0,0,1,4,1],
+                [1,0,1,1,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,1,0,1],
+                [1,1,1,0,1,1,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,4,0,0,0,5,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 2 - 11x11 Ocean
+            [
+                [1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,1,0,0,0,0,4,0,1],
+                [1,0,0,1,0,1,1,1,1,0,1],
+                [1,4,1,1,0,1,5,0,0,0,1],
+                [1,0,0,0,0,1,0,1,1,0,1],
+                [1,0,1,1,0,1,0,0,1,0,1],
+                [1,0,1,0,0,1,1,0,1,0,1],
+                [1,0,1,0,1,0,0,0,1,4,1],
+                [1,0,0,0,1,0,1,0,0,0,1],
+                [1,1,1,0,0,0,1,0,4,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 3 - 13x13 Candy
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,0,1,4,0,0,0,0,0,1],
+                [1,0,1,1,0,1,0,1,1,1,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,0,1,0,1],
+                [1,4,0,0,1,5,0,0,1,0,0,4,1],
+                [1,0,1,0,1,0,1,0,1,0,1,0,1],
+                [1,0,1,0,1,0,0,0,1,0,1,0,1],
+                [1,0,1,0,1,1,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,1,1,1,1,1,0,1,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,0,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 4 - 13x13 Space
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,1,0,0,0,1,0,0,4,1],
+                [1,0,1,0,1,0,1,0,1,0,1,0,1],
+                [1,0,1,0,0,0,1,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,5,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,4,0,0,0,0,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,1],
+                [1,1,1,0,1,1,1,1,1,0,1,0,1],
+                [1,4,0,0,0,0,0,4,0,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 5 - 13x13 Volcano
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,4,1,0,0,0,0,0,1,0,1],
+                [1,1,0,1,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,0,4,1],
+                [1,0,1,0,1,0,1,0,1,1,1,0,1],
+                [1,4,1,0,1,5,1,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,0,1,0,1,1,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,1,4,0,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 6 - 13x13 Ice
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,0,0,0,1,0,0,0,4,1],
+                [1,0,1,1,1,1,0,1,0,1,0,0,1],
+                [1,0,1,4,0,0,0,0,0,1,1,0,1],
+                [1,0,1,0,1,1,1,1,0,0,0,0,1],
+                [1,0,0,0,0,0,5,1,1,1,1,0,1],
+                [1,1,1,1,1,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,1,1,1,1,1,0,1],
+                [1,0,1,1,1,0,0,0,0,0,1,0,1],
+                [1,0,0,0,1,1,1,1,1,0,1,0,1],
+                [1,1,1,0,0,0,0,0,0,0,1,0,1],
+                [1,4,0,0,1,1,1,1,1,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 7 - 15x15 Desert
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,0,1,0,0,0,0,1,0,0,4,1],
+                [1,0,1,1,0,1,0,1,1,0,1,0,1,0,1],
+                [1,0,0,1,0,0,0,0,1,0,0,0,1,0,1],
+                [1,1,0,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,4,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,1,5,1,0,1],
+                [1,1,1,0,1,1,1,1,1,0,1,0,1,0,1],
+                [1,4,0,0,0,0,0,0,1,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,1,0,1,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,0,0,0,4,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 8 - 15x15 Magic
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,1,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,0,1,1,1,1,1,0,1,0,1],
+                [1,4,1,0,0,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,1,4,0,0,0,0,1],
+                [1,0,1,0,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,1,0,0,0,0,5,0,0,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,1,0,1,0,0,0,1,0,1],
+                [1,1,1,1,1,0,1,0,1,0,1,0,1,4,1],
+                [1,0,0,0,0,0,0,0,1,0,1,0,0,0,1],
+                [1,0,1,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,0,0,1,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 9 - 15x15 Jungle
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,4,0,0,1,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+                [1,0,1,0,1,0,0,0,1,0,0,0,1,4,1],
+                [1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,0,5,0,0,0,0,1],
+                [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1],
+                [1,4,0,0,0,0,0,0,4,0,0,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 10 - 15x15 Crystal
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,0,0,0,1,4,0,0,0,0,0,1],
+                [1,0,1,1,1,1,0,1,0,1,1,1,1,0,1],
+                [1,0,1,0,0,0,0,1,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,0,1,1,1,1,0,1,0,1],
+                [1,4,0,0,1,0,0,0,0,0,0,0,0,4,1],
+                [1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],
+                [1,0,1,0,0,0,1,5,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,1,0,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1],
+                [1,0,0,4,0,0,0,0,0,0,0,4,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 11 - 17x17 Rainbow
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+                [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+                [1,4,0,1,0,0,0,0,0,1,0,0,0,1,0,4,1],
+                [1,0,0,1,0,1,1,1,0,1,0,1,1,1,0,0,1],
+                [1,0,1,1,0,0,0,1,0,0,0,0,0,0,0,1,1],
+                [1,0,0,0,0,1,0,1,0,1,1,1,1,1,0,0,1],
+                [1,1,1,1,0,1,0,0,0,0,0,5,0,1,0,0,1],
+                [1,0,0,0,0,1,1,1,1,1,1,0,1,1,1,0,1],
+                [1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                [1,4,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1],
+                [1,0,1,0,1,1,0,1,1,1,0,1,1,0,1,0,1],
+                [1,0,0,0,0,0,4,0,0,0,0,0,0,4,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 12 - 17x17 Final Challenge
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,0,0,1,0,0,4,0,0,0,1,0,0,0,0,1],
+                [1,0,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1],
+                [1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,4,1],
+                [1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1],
+                [1,0,1,1,1,1,0,1,0,1,1,0,1,1,1,0,1],
+                [1,4,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1],
+                [1,0,1,1,0,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,1,0,0,0,5,0,0,0,0,0,0,1,0,1],
+                [1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+                [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1],
+                [1,0,0,1,0,0,0,0,4,1,0,0,0,0,0,0,1],
+                [1,1,0,1,1,1,1,0,0,1,1,1,0,1,1,0,1],
+                [1,0,0,0,4,0,0,0,0,0,0,0,0,0,4,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ]
+        ];
+
+        // Animated background
+        let bgParticles = [];
+
+        function initBackground() {
+            bgParticles = [];
+            for (let i = 0; i < 100; i++) {
+                bgParticles.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    size: Math.random() * 3 + 1,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5,
+                    opacity: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+
+        function drawBackground() {
+            const theme = themes[currentLevel % themes.length];
+
+            // Gradient background
+            const gradient = bgCtx.createRadialGradient(
+                bgCanvas.width/2, bgCanvas.height/2, 0,
+                bgCanvas.width/2, bgCanvas.height/2, bgCanvas.width
+            );
+            gradient.addColorStop(0, theme.bg[0]);
+            gradient.addColorStop(1, theme.bg[1]);
+            bgCtx.fillStyle = gradient;
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            // Floating particles
+            bgCtx.fillStyle = 'white';
+            bgParticles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0) p.x = bgCanvas.width;
+                if (p.x > bgCanvas.width) p.x = 0;
+                if (p.y < 0) p.y = bgCanvas.height;
+                if (p.y > bgCanvas.height) p.y = 0;
+
+                bgCtx.globalAlpha = p.opacity;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                bgCtx.fill();
+            });
+            bgCtx.globalAlpha = 1;
+
+            requestAnimationFrame(drawBackground);
+        }
+
+        initBackground();
+        drawBackground();
+
+        function renderMaze() {
+            const theme = themes[currentLevel % themes.length];
+            mazeElement.innerHTML = '';
+            mazeElement.className = theme.class;
+            mazeElement.style.gridTemplateColumns = `repeat(${maze[0].length}, 38px)`;
+
+            document.getElementById('themeTitle').textContent = theme.name;
+            document.body.style.setProperty('--theme-color', theme.bg[0]);
+
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${x}-${y}`;
+
+                    if (maze[y][x] === 1) {
+                        cell.className += ' wall';
+                        cell.textContent = theme.wall;
+                    } else {
+                        cell.className += ' path';
+
+                        if (x === playerX && y === playerY) {
+                            cell.textContent = theme.player;
+                            cell.className += ' player';
+                        } else if (maze[y][x] === 3) {
+                            cell.textContent = '🏆';
+                            cell.className += ' goal';
+                        } else if (maze[y][x] === 4) {
+                            cell.textContent = '⭐';
+                            cell.className += ' coin';
+                        } else if (maze[y][x] === 5) {
+                            cell.textContent = '💎';
+                            cell.className += ' powerup';
+                        }
+                    }
+
+                    mazeElement.appendChild(cell);
+                }
+            }
+
+            updateMinimap();
+        }
+
+        function updateMinimap() {
+            const cellSize = 100 / Math.max(maze.length, maze[0].length);
+            minimapCtx.fillStyle = '#000';
+            minimapCtx.fillRect(0, 0, 100, 100);
+
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 1) {
+                        minimapCtx.fillStyle = '#444';
+                    } else if (x === playerX && y === playerY) {
+                        minimapCtx.fillStyle = '#ffff00';
+                    } else if (maze[y][x] === 3) {
+                        minimapCtx.fillStyle = '#ffd700';
+                    } else if (maze[y][x] === 4 || maze[y][x] === 5) {
+                        minimapCtx.fillStyle = '#00ffff';
+                    } else {
+                        minimapCtx.fillStyle = '#222';
+                    }
+                    minimapCtx.fillRect(x * cellSize, y * cellSize, cellSize - 0.5, cellSize - 0.5);
+                }
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('starsCount').textContent = totalStars;
+            document.getElementById('gemsCount').textContent = totalGems;
+            document.getElementById('levelNum').textContent = currentLevel + 1;
+
+            const progress = ((currentLevel) / levels.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Adventure Progress: ${Math.round(progress)}%`;
+        }
+
+        function loadLevel(levelIndex) {
+            if (levelIndex >= levels.length) {
+                // ALL LEVELS COMPLETE!
+                winTitle.textContent = '👑 CHAMPION! 👑';
+                winStats.innerHTML = `
+                    You completed ALL ${levels.length} levels!<br><br>
+                    Total Stars: <span>${totalStars}</span><br>
+                    Total Gems: <span>${totalGems}</span><br><br>
+                    🎉 YOU ARE AMAZING! 🎉
+                `;
+                document.getElementById('nextBtn').textContent = 'Play Again!';
+                document.getElementById('nextBtn').onclick = () => {
+                    currentLevel = 0;
+                    totalStars = 0;
+                    totalGems = 0;
+                    winScreen.classList.remove('show');
+                    document.getElementById('nextBtn').textContent = 'Next Level!';
+                    document.getElementById('nextBtn').onclick = nextLevel;
+                    loadLevel(0);
+                };
+                winScreen.classList.add('show');
+                createConfetti(50);
+                return;
+            }
+
+            currentLevel = levelIndex;
+            levelStars = 0;
+            levelGems = 0;
+            maze = JSON.parse(JSON.stringify(levels[levelIndex]));
+
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 2) {
+                        playerX = x;
+                        playerY = y;
+                        maze[y][x] = 0;
+                    }
+                }
+            }
+
+            const theme = themes[currentLevel % themes.length];
+            levelElement.textContent = `Level ${currentLevel + 1}`;
+            messageElement.textContent = `You are ${theme.player}! Find the 🏆 trophy!`;
+            updateStats();
+            renderMaze();
+            initBackground();
+        }
+
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = color;
+                particle.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px)`;
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function move(dx, dy) {
+            const newX = playerX + dx;
+            const newY = playerY + dy;
+
+            if (newY < 0 || newY >= maze.length || newX < 0 || newX >= maze[0].length) {
+                return;
+            }
+
+            if (maze[newY][newX] === 1) {
+                messageElement.textContent = "Oops! That's a wall!";
+                return;
+            }
+
+            const cell = document.getElementById(`cell-${newX}-${newY}`);
+            const rect = cell ? cell.getBoundingClientRect() : null;
+
+            if (maze[newY][newX] === 4) {
+                totalStars++;
+                levelStars++;
+                messageElement.textContent = "⭐ Got a star! ⭐";
+                maze[newY][newX] = 0;
+                if (rect) createParticles(rect.left + 19, rect.top + 19, '#ffdd00', 10);
+                if (cell) cell.querySelector('.coin')?.classList.add('collected');
+            }
+
+            if (maze[newY][newX] === 5) {
+                totalGems++;
+                levelGems++;
+                messageElement.textContent = "💎 AMAZING! Got a gem! 💎";
+                maze[newY][newX] = 0;
+                if (rect) createParticles(rect.left + 19, rect.top + 19, '#00ffff', 20);
+                if (cell) cell.querySelector('.powerup')?.classList.add('collected');
+            }
+
+            if (maze[newY][newX] === 3) {
+                playerX = newX;
+                playerY = newY;
+                renderMaze();
+                winLevel();
+                return;
+            }
+
+            playerX = newX;
+            playerY = newY;
+            updateStats();
+            renderMaze();
+        }
+
+        function winLevel() {
+            winTitle.textContent = '🎉 LEVEL COMPLETE! 🎉';
+            winStats.innerHTML = `
+                Level ${currentLevel + 1} cleared!<br><br>
+                Stars this level: <span>${levelStars}</span><br>
+                Gems this level: <span>${levelGems}</span><br><br>
+                Total Stars: <span>${totalStars}</span><br>
+                Total Gems: <span>${totalGems}</span>
+            `;
+            document.getElementById('nextBtn').textContent = 'Next Level!';
+            winScreen.classList.add('show');
+            createConfetti(30);
+        }
+
+        function nextLevel() {
+            winScreen.classList.remove('show');
+            loadLevel(currentLevel + 1);
+        }
+
+        function createConfetti(amount) {
+            const confettiEmojis = ['🎉', '🎊', '⭐', '🌟', '💫', '🎈', '🎁', '✨', '💎', '🏆', '🌈', '❤️'];
+            for (let i = 0; i < amount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.textContent = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (2 + Math.random() * 3) + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 80);
+            }
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (winScreen.classList.contains('show')) return;
+
+            switch(e.key) {
+                case 'ArrowUp': case 'w': case 'W':
+                    e.preventDefault();
+                    move(0, -1);
+                    break;
+                case 'ArrowDown': case 's': case 'S':
+                    e.preventDefault();
+                    move(0, 1);
+                    break;
+                case 'ArrowLeft': case 'a': case 'A':
+                    e.preventDefault();
+                    move(-1, 0);
+                    break;
+                case 'ArrowRight': case 'd': case 'D':
+                    e.preventDefault();
+                    move(1, 0);
+                    break;
+            }
+        });
+
+        // Touch swipe support
+        let touchStartX, touchStartY;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!touchStartX || !touchStartY) return;
+
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > 30) move(1, 0);
+                else if (dx < -30) move(-1, 0);
+            } else {
+                if (dy > 30) move(0, 1);
+                else if (dy < -30) move(0, -1);
+            }
+
+            touchStartX = null;
+            touchStartY = null;
+        });
+
+        // Start game
+        loadLevel(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+/* Space Armada - Main Styles
+ * Base styles, canvas, and core game elements
+ * Extracted from index.html for modularization
+ */
+
+/* Reset and base styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    overflow: hidden;
+    background: #000;
+    font-family: 'Orbitron', 'Courier New', monospace;
+}
+
+#gameCanvas { display: block; }
+
+/* Crosshair */
+#crosshair {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+}
+
+#crosshair::before, #crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 100, 100, 0.8);
+}
+
+#crosshair::before {
+    width: 2px;
+    height: 40px;
+    left: 19px;
+}
+
+#crosshair::after {
+    width: 40px;
+    height: 2px;
+    top: 19px;
+}
+
+#crosshair .dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #f00;
+    border-radius: 50%;
+    top: 17px;
+    left: 17px;
+}
+
+/* Lock indicator */
+#lockIndicator {
+    position: fixed;
+    pointer-events: none;
+    z-index: 60;
+    display: none;
+}
+
+#lockIndicator .lock-box {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #f00;
+    transform: translate(-50%, -50%);
+    animation: lockPulse 0.5s infinite;
+}
+
+@keyframes lockPulse {
+    0%, 100% { border-color: #f00; }
+    50% { border-color: #ff0; }
+}
+
+/* Message display */
+#message {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0f0;
+    font-size: 28px;
+    text-shadow: 0 0 20px #0f0;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#message.show { opacity: 1; }
+
+/* Start screen */
+#startScreen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, #001020 0%, #000 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+}
+
+#startScreen h1 {
+    font-size: 72px;
+    color: #0ff;
+    text-shadow: 0 0 30px #0ff, 0 0 60px #00f;
+    margin-bottom: 20px;
+    letter-spacing: 10px;
+}
+
+#startScreen .subtitle {
+    color: #0a0;
+    font-size: 18px;
+    margin-bottom: 40px;
+    letter-spacing: 5px;
+}
+
+#startScreen p {
+    color: #0f0;
+    font-size: 14px;
+    max-width: 700px;
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+/* Button styles */
+.btn {
+    padding: 15px 50px;
+    font-size: 20px;
+    background: transparent;
+    color: #0f0;
+    border: 2px solid #0f0;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 3px;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 30px #0f0;
+}
+
+/* Game over screen */
+#gameOverScreen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+}
+
+#gameOverScreen h1 {
+    font-size: 48px;
+    color: #f00;
+    text-shadow: 0 0 20px #f00;
+    margin-bottom: 20px;
+}
+
+#gameOverScreen .stats {
+    color: #0f0;
+    font-size: 16px;
+    margin: 20px 0;
+    text-align: center;
+    line-height: 2;
+}
+
+/* Minimap / Scanner */
+#minimap {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 140px;
+    height: 140px;
+    background: #010;
+    border: 1px solid #0a0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#minimap::before {
+    display: none; /* Remove SCANNER label */
+}
+
+#minimapCanvas {
+    border-radius: 50%;
+}
+
+/* Scanner sweep animation overlay */
+#scannerSweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(0, 255, 0, 0.1) 20deg,
+        transparent 40deg
+    );
+    animation: scannerRotate 3s linear infinite;
+}
+
+@keyframes scannerRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Hidden elements for cleaner UI */
+#controls {
+    display: none !important;
+}
+
+#headingIndicator {
+    display: none !important;
+}
+
+#sectorInfo {
+    display: none !important;
+}

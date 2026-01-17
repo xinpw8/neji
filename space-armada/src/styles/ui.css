@@ -1,0 +1,415 @@
+/* Space Armada - UI Styles
+ * HUD, overlays, status bars, weapon info
+ * Extracted from index.html for modularization
+ */
+
+/* SIMPLIFIED HUD - Minimal UI */
+#ui {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    color: #0f0;
+    font-size: 12px;
+    z-index: 100;
+    background: rgba(0, 15, 0, 0.7);
+    padding: 8px 12px;
+    border: 1px solid #0a0;
+    border-radius: 3px;
+    min-width: 160px;
+}
+
+#ui .title {
+    display: none; /* Hide title */
+}
+
+#ui .stat {
+    margin: 3px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+#ui .bar-container {
+    width: 100%;
+    height: 8px;
+    background: #001100;
+    border: 1px solid #050;
+    margin: 2px 0;
+}
+
+#ui .bar {
+    height: 100%;
+    transition: width 0.3s;
+}
+
+/* EV:O style status bars - green for shields, red/orange for hull */
+.health-bar { background: linear-gradient(90deg, #880000, #ff4400, #ff8800); }
+.shield-bar { background: linear-gradient(90deg, #003300, #00aa00, #00ff00); }
+.energy-bar { background: linear-gradient(90deg, #333300, #888800, #ffff00); }
+
+/* Weapon info - smaller, bottom center */
+#weaponInfo {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0ff;
+    font-size: 11px;
+    z-index: 100;
+    background: rgba(0, 15, 20, 0.7);
+    padding: 6px 15px;
+    border: 1px solid #066;
+    border-radius: 3px;
+    text-align: center;
+}
+
+#weaponInfo .weapon-name {
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+#weaponInfo .weapon-type {
+    font-size: 10px;
+    color: #088;
+}
+
+/* Upgrade Panel */
+#upgradePanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 30, 0, 0.95);
+    border: 2px solid #0f0;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 200;
+    display: none;
+    min-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#upgradePanel h2 {
+    color: #0ff;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.upgrade-section {
+    margin: 15px 0;
+    border-top: 1px solid #050;
+    padding-top: 10px;
+}
+
+.upgrade-section h3 {
+    color: #0f0;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.upgrade-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: rgba(0, 50, 0, 0.5);
+    border: 1px solid #030;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upgrade-item:hover {
+    background: rgba(0, 80, 0, 0.5);
+    border-color: #0f0;
+}
+
+.upgrade-item .name { color: #0f0; }
+.upgrade-item .cost { color: #ff0; }
+.upgrade-item .level { color: #0ff; font-size: 11px; }
+
+/* EV:O STYLE TARGET PANEL */
+#evTargetPanel {
+    position: fixed;
+    top: 10px;
+    left: 180px;
+    width: 180px;
+    background: rgba(0, 15, 0, 0.8);
+    border: 1px solid #0a0;
+    border-radius: 3px;
+    padding: 8px;
+    z-index: 100;
+    display: none;
+    font-family: 'Orbitron', monospace;
+}
+
+#evTargetPanel .target-header {
+    color: #0f0;
+    font-size: 9px;
+    text-align: center;
+    border-bottom: 1px solid #040;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+/* Hide the wireframe views for cleaner UI */
+#evTargetPanel .target-views {
+    display: none;
+}
+
+#evTargetPanel .target-view {
+    display: none;
+}
+
+#evTargetPanel .target-view-label {
+    display: none;
+}
+
+#evTargetPanel .target-info {
+    color: #0f0;
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+#evTargetPanel .target-name {
+    color: #0f0;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+#evTargetPanel .target-faction {
+    color: #080;
+    font-size: 8px;
+    margin-bottom: 5px;
+}
+
+#evTargetPanel .target-stat {
+    display: flex;
+    justify-content: space-between;
+    margin: 2px 0;
+    font-size: 9px;
+}
+
+#evTargetPanel .target-stat-label {
+    color: #080;
+}
+
+#evTargetPanel .target-stat-value {
+    color: #0f0;
+}
+
+#evTargetPanel .target-bar-container {
+    width: 100%;
+    height: 6px;
+    background: #010;
+    border: 1px solid #030;
+    margin: 2px 0;
+}
+
+#evTargetPanel .target-bar {
+    height: 100%;
+    transition: width 0.2s;
+}
+
+#evTargetPanel .target-hull-bar {
+    background: linear-gradient(90deg, #884400, #ff8800);
+}
+
+#evTargetPanel .target-shield-bar {
+    background: linear-gradient(90deg, #004400, #00ff00);
+}
+
+/* EV-style Comm Panel */
+#evCommPanel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    background: #001100;
+    border: 3px solid #00aa00;
+    border-radius: 5px;
+    padding: 15px;
+    z-index: 200;
+    display: none;
+    font-family: 'Orbitron', monospace;
+}
+
+#evCommPanel .comm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #004400;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+#evCommPanel .comm-title {
+    color: #00ff00;
+    font-size: 12px;
+    letter-spacing: 3px;
+}
+
+#evCommPanel .comm-freq {
+    color: #008800;
+    font-size: 9px;
+}
+
+#evCommPanel .comm-body {
+    display: flex;
+    gap: 15px;
+}
+
+#evCommPanel .comm-portrait {
+    width: 100px;
+    height: 100px;
+    background: #000800;
+    border: 2px solid #003300;
+    flex-shrink: 0;
+}
+
+#evCommPanel .comm-content {
+    flex: 1;
+}
+
+#evCommPanel .comm-speaker {
+    color: #00ff00;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+#evCommPanel .comm-text {
+    color: #00aa00;
+    font-size: 10px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    min-height: 50px;
+}
+
+#evCommPanel .comm-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#evCommPanel .comm-btn {
+    padding: 6px 12px;
+    background: #002200;
+    border: 1px solid #00aa00;
+    color: #00ff00;
+    cursor: pointer;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+#evCommPanel .comm-btn:hover {
+    background: #003300;
+    border-color: #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+/* Hidden panels for cleaner UI */
+#factionPanel {
+    display: none !important;
+}
+#factionPanel .faction-title { display: none; }
+#factionPanel .faction-item { display: none; }
+#factionPanel .faction-name { display: none; }
+#factionPanel .rep-bar { display: none; }
+#factionPanel .rep-fill { display: none; }
+#factionPanel .rep-value { display: none; }
+
+#encounterInfo {
+    display: none !important;
+}
+#encounterInfo .encounter-faction { display: none; }
+#encounterInfo .encounter-ships { display: none; }
+#encounterInfo .encounter-attitude { display: none; }
+
+#activeMission {
+    display: none !important;
+}
+#activeMission .mission-header { display: none; }
+#activeMission .mission-objective { display: none; }
+#activeMission .mission-progress { display: none; }
+
+/* Mission Panel */
+#missionPanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 20, 40, 0.97);
+    border: 2px solid #48f;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 250;
+    display: none;
+    min-width: 480px;
+    max-width: 600px;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+#missionPanel h2 { color: #8af; margin-bottom: 10px; text-align: center; font-size: 16px; }
+
+.mission-item { background: rgba(30, 50, 80, 0.6); border: 1px solid #368; padding: 10px; margin: 6px 0; cursor: pointer; transition: all 0.2s; }
+.mission-item:hover { background: rgba(50, 80, 120, 0.7); border-color: #8af; }
+.mission-item.active { border-color: #0f0; background: rgba(30, 80, 50, 0.6); }
+.mission-item .mission-title { color: #fff; font-size: 12px; margin-bottom: 3px; }
+.mission-item .mission-giver { font-size: 9px; margin-bottom: 5px; }
+.mission-item .mission-desc { color: #aaa; font-size: 10px; line-height: 1.4; }
+.mission-item .mission-reward { color: #ff0; font-size: 10px; margin-top: 5px; }
+
+/* Dialogue Panel */
+#dialoguePanel {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 20, 40, 0.95);
+    border: 2px solid #0af;
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 180;
+    display: none;
+    min-width: 400px;
+    max-width: 550px;
+}
+
+#dialoguePanel .speaker { font-size: 12px; margin-bottom: 6px; }
+#dialoguePanel .dialogue-text { color: #ccc; font-size: 11px; line-height: 1.4; margin-bottom: 10px; }
+#dialoguePanel .dialogue-options { display: flex; flex-wrap: wrap; gap: 6px; }
+#dialoguePanel .dialogue-btn { padding: 5px 10px; background: rgba(0, 80, 120, 0.5); border: 1px solid #0af; color: #0ff; cursor: pointer; font-family: inherit; font-size: 10px; }
+#dialoguePanel .dialogue-btn:hover { background: rgba(0, 120, 180, 0.6); }
+
+/* Storyline Notification */
+.storyline-notification {
+    position: fixed;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(50, 20, 80, 0.95), rgba(20, 40, 80, 0.95));
+    border: 2px solid #a8f;
+    border-radius: 8px;
+    padding: 15px 25px;
+    z-index: 300;
+    text-align: center;
+    animation: storylineGlow 2s infinite;
+    display: none;
+}
+
+@keyframes storylineGlow {
+    0%, 100% { box-shadow: 0 0 15px rgba(150, 100, 255, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(150, 100, 255, 0.8); }
+}
+
+.storyline-notification h3 { color: #fff; font-size: 14px; margin-bottom: 6px; }
+.storyline-notification p { color: #aaf; font-size: 11px; margin-bottom: 10px; }
+.storyline-notification button { padding: 5px 12px; background: rgba(100, 50, 150, 0.6); border: 1px solid #a8f; color: #fff; cursor: pointer; font-family: inherit; font-size: 10px; }

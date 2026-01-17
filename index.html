@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neji Games Collection</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 50px;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .game-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(0,217,255,0.3);
+        }
+        .game-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #00d9ff;
+        }
+        .game-card p {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        .game-card .tech {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(0,217,255,0.1), rgba(0,255,136,0.1));
+        }
+        @media (max-width: 700px) {
+            .featured { grid-column: span 1; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Neji Games</h1>
+        <p class="subtitle">A collection of browser-based games</p>
+
+        <div class="games-grid">
+            <a href="/space-armada/" class="game-card featured">
+                <h2>Space Armada</h2>
+                <p>Top-down space shooter with Newtonian physics, roguelike progression, and 30+ ships. Inspired by Escape Velocity and Star Control.</p>
+                <div class="tech">Three.js | WebGL | GLB Models</div>
+            </a>
+
+            <a href="/fish-royale/" class="game-card">
+                <h2>Fish Royale 3D</h2>
+                <p>Underwater survival game in full 3D. Eat smaller fish, avoid larger predators.</p>
+                <div class="tech">Three.js | WebGL</div>
+            </a>
+
+            <a href="/odell-lake/" class="game-card">
+                <h2>Odell Lake</h2>
+                <p>Classic educational fish survival game reimagined. Learn about lake ecosystems.</p>
+                <div class="tech">Canvas 2D</div>
+            </a>
+
+            <a href="/maze-adventure/" class="game-card">
+                <h2>Epic Maze Adventure</h2>
+                <p>Multi-level maze game with 12 themed worlds. Navigate through increasingly complex labyrinths.</p>
+                <div class="tech">Canvas 2D</div>
+            </a>
+
+            <a href="/catch-the-stars/" class="game-card">
+                <h2>Catch the Stars</h2>
+                <p>Basket-catching arcade game. Collect falling items and rack up high scores.</p>
+                <div class="tech">Canvas 2D</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

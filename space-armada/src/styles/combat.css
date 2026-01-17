@@ -1,0 +1,89 @@
+/* Space Armada - Combat Styles
+ * Combat effects, explosions, projectiles (placeholder)
+ * Extracted from index.html for modularization
+ */
+
+/* Combat-related visual effects are primarily handled in JavaScript/Three.js
+ * This file serves as a placeholder for any CSS-based combat animations
+ * that may be added in the future.
+ */
+
+/* Potential future additions:
+ * - Hit flash overlays
+ * - Damage indicators
+ * - Shield impact effects
+ * - Screen shake (CSS transform based)
+ */
+
+/* Screen flash effect for taking damage */
+.damage-flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 400;
+    opacity: 0;
+    animation: damageFlash 0.2s ease-out;
+}
+
+@keyframes damageFlash {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Critical hit indicator */
+.critical-hit {
+    position: fixed;
+    font-size: 24px;
+    color: #ff0;
+    text-shadow: 0 0 10px #ff0;
+    pointer-events: none;
+    z-index: 150;
+    animation: criticalHit 1s ease-out forwards;
+}
+
+@keyframes criticalHit {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(1);
+    }
+}
+
+/* Low health warning pulse */
+.low-health-warning {
+    animation: lowHealthPulse 1s ease-in-out infinite;
+}
+
+@keyframes lowHealthPulse {
+    0%, 100% {
+        border-color: #0a0;
+    }
+    50% {
+        border-color: #f00;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    }
+}
+
+/* Shield impact effect */
+.shield-hit {
+    animation: shieldHit 0.3s ease-out;
+}
+
+@keyframes shieldHit {
+    0% {
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    }
+    100% {
+        box-shadow: none;
+    }
+}

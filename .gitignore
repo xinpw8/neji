@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+
+# Agent communication (keep structure, ignore logs)
+.agent-comms/*.log
+.agent-comms/*.pid
+
+# Build outputs
+dist/
+build/

@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Odell Lake - Fish Survival!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+            background: #001428;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        #ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            z-index: 100;
+        }
+
+        .stat {
+            color: #fff;
+            font-size: 1.3em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 1.5em;
+        }
+
+        #healthBar {
+            width: 200px;
+            height: 25px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        #healthFill {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #ff8844, #44ff44);
+            transition: width 0.3s;
+            border-radius: 15px;
+        }
+
+        #choicePanel {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        #encounterText {
+            color: #fff;
+            font-size: 1.8em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        #choices {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            padding: 15px 30px;
+            font-size: 1.3em;
+            font-family: 'Comic Sans MS', cursive;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            min-width: 140px;
+        }
+
+        .choice-btn:hover {
+            transform: scale(1.1) translateY(-3px);
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .choice-eat {
+            background: linear-gradient(145deg, #ff6b6b, #ee5555);
+            color: white;
+        }
+
+        .choice-ignore {
+            background: linear-gradient(145deg, #ffd93d, #ffcc00);
+            color: #333;
+        }
+
+        .choice-escape-deep {
+            background: linear-gradient(145deg, #4ecdc4, #35b5ad);
+            color: white;
+        }
+
+        .choice-escape-shallow {
+            background: linear-gradient(145deg, #a8e6cf, #7dd3b8);
+            color: #333;
+        }
+
+        #startScreen, #gameOverScreen, #fishSelectScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #001830, #003060);
+            z-index: 200;
+        }
+
+        #startScreen h1, #fishSelectScreen h1 {
+            font-size: 4em;
+            color: #4ecdc4;
+            text-shadow: 4px 4px 0 #006666, 0 0 30px rgba(78,205,196,0.5);
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        #startScreen p {
+            color: #88ccff;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            padding: 20px 60px;
+            font-size: 2em;
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(145deg, #ff6b6b, #ee5555);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+
+        #fishSelectScreen {
+            display: none;
+        }
+
+        #fishSelectScreen h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        #fishOptions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 900px;
+        }
+
+        .fish-option {
+            background: rgba(255,255,255,0.1);
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 250px;
+        }
+
+        .fish-option:hover {
+            background: rgba(78,205,196,0.3);
+            border-color: #4ecdc4;
+            transform: scale(1.05);
+        }
+
+        .fish-option .emoji {
+            font-size: 4em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .fish-option .name {
+            color: #fff;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .fish-option .desc {
+            color: #88ccff;
+            font-size: 0.9em;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        #gameOverScreen h1 {
+            font-size: 3.5em;
+            color: #ff6b6b;
+            text-shadow: 4px 4px 0 #880000;
+            margin-bottom: 20px;
+        }
+
+        #gameOverScreen .final-score {
+            color: #ffd93d;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        #result {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+            z-index: 150;
+            display: none;
+            animation: popIn 0.5s;
+            text-align: center;
+            padding: 20px 40px;
+            border-radius: 20px;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .result-good {
+            background: rgba(0,200,100,0.8);
+        }
+
+        .result-bad {
+            background: rgba(200,50,50,0.8);
+        }
+
+        /* Water effects */
+        .bubble {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+            animation: rise linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        .light-ray {
+            position: fixed;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,200,0.1), transparent 70%);
+            transform: skewX(-15deg);
+            pointer-events: none;
+            animation: rayMove 8s ease-in-out infinite;
+        }
+
+        @keyframes rayMove {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        #infoPanel {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 1em;
+            z-index: 100;
+            max-width: 200px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        #infoPanel h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        #infoPanel .info-line {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .playing #startScreen,
+        .playing #fishSelectScreen,
+        .playing #gameOverScreen {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui" style="display: none;">
+        <div class="stat">
+            <span class="stat-icon">🐟</span>
+            <span id="playerFishName">Rainbow Trout</span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">❤️</span>
+            <div id="healthBar"><div id="healthFill" style="width: 100%"></div></div>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">⭐</span>
+            <span id="score">0</span>
+        </div>
+    </div>
+
+    <div id="infoPanel" style="display: none;">
+        <h3>🐟 Your Diet</h3>
+        <div id="dietInfo"></div>
+        <h3 style="margin-top: 15px;">⚠️ Danger</h3>
+        <div id="dangerInfo"></div>
+    </div>
+
+    <div id="choicePanel">
+        <div id="encounterText"></div>
+        <div id="choices"></div>
+    </div>
+
+    <div id="result"></div>
+
+    <div id="startScreen">
+        <h1>🐟 Odell Lake 🐟</h1>
+        <p>
+            Survive in the lake! You're a fish trying to live.<br>
+            Eat smaller creatures, avoid predators, and don't bite the fishing hook!
+        </p>
+        <button class="start-btn" onclick="showFishSelect()">Play!</button>
+    </div>
+
+    <div id="fishSelectScreen">
+        <h1>🐟 Choose Your Fish! 🐟</h1>
+        <div id="fishOptions"></div>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1 id="gameOverTitle">Game Over!</h1>
+        <div class="final-score">Score: <span id="finalScore">0</span></div>
+        <button class="start-btn" onclick="restartGame()">Play Again!</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Game state
+        let gameState = 'start'; // start, select, playing, encounter, gameover
+        let playerFish = null;
+        let health = 100;
+        let score = 0;
+        let currentEncounter = null;
+        let encounterCreature = null;
+
+        // Fish data
+        const fishTypes = [
+            {
+                id: 'rainbow_trout',
+                name: 'Rainbow Trout',
+                emoji: '🐟',
+                color: '#ff9999',
+                desc: 'Fast and colorful! Eats bugs and small fish.',
+                eats: ['insect', 'crayfish', 'chub'],
+                predators: ['mackinaw', 'osprey', 'otter'],
+                size: 2
+            },
+            {
+                id: 'mackinaw',
+                name: 'Mackinaw',
+                emoji: '🐠',
+                color: '#668899',
+                desc: 'Big and strong! Eats other fish.',
+                eats: ['rainbow_trout', 'chub', 'whitefish', 'crayfish'],
+                predators: ['osprey', 'otter'],
+                size: 4
+            },
+            {
+                id: 'chub',
+                name: 'Chub',
+                emoji: '🐡',
+                color: '#aabb88',
+                desc: 'Small but quick! Eats bugs.',
+                eats: ['insect', 'algae'],
+                predators: ['rainbow_trout', 'mackinaw', 'osprey', 'otter'],
+                size: 1
+            },
+            {
+                id: 'whitefish',
+                name: 'Whitefish',
+                emoji: '🐟',
+                color: '#ddddff',
+                desc: 'Bottom feeder. Eats bugs and crayfish.',
+                eats: ['insect', 'crayfish', 'algae'],
+                predators: ['mackinaw', 'osprey', 'otter'],
+                size: 2
+            }
+        ];
+
+        // Encounter creatures
+        const creatures = [
+            { id: 'insect', name: 'Water Bug', emoji: '🦟', size: 0.5, isFish: false },
+            { id: 'crayfish', name: 'Crayfish', emoji: '🦞', size: 1, isFish: false },
+            { id: 'algae', name: 'Algae', emoji: '🌿', size: 0, isFish: false },
+            { id: 'rainbow_trout', name: 'Rainbow Trout', emoji: '🐟', size: 2, isFish: true, color: '#ff9999' },
+            { id: 'mackinaw', name: 'Mackinaw', emoji: '🐠', size: 4, isFish: true, color: '#668899' },
+            { id: 'chub', name: 'Chub', emoji: '🐡', size: 1, isFish: true, color: '#aabb88' },
+            { id: 'whitefish', name: 'Whitefish', emoji: '🐟', size: 2, isFish: true, color: '#ddddff' },
+            { id: 'osprey', name: 'Osprey (Bird!)', emoji: '🦅', size: 5, isPredator: true, fromAbove: true },
+            { id: 'otter', name: 'Otter', emoji: '🦦', size: 5, isPredator: true },
+            { id: 'hook', name: 'Fishing Lure', emoji: '🪝', size: 0, isDanger: true }
+        ];
+
+        // Background elements
+        let waterPlants = [];
+        let bubbles = [];
+        let fishBackground = [];
+
+        function initBackground() {
+            // Water plants
+            waterPlants = [];
+            for (let i = 0; i < 15; i++) {
+                waterPlants.push({
+                    x: Math.random() * canvas.width,
+                    height: 100 + Math.random() * 200,
+                    width: 20 + Math.random() * 30,
+                    color: `hsl(${120 + Math.random() * 40}, 60%, ${20 + Math.random() * 20}%)`,
+                    sway: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Background fish
+            fishBackground = [];
+            for (let i = 0; i < 10; i++) {
+                fishBackground.push({
+                    x: Math.random() * canvas.width,
+                    y: 100 + Math.random() * (canvas.height - 200),
+                    size: 10 + Math.random() * 20,
+                    speed: 0.5 + Math.random() * 1.5,
+                    color: `hsl(${180 + Math.random() * 60}, 50%, 50%)`
+                });
+            }
+        }
+
+        function drawBackground(time) {
+            // Water gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#003366');
+            gradient.addColorStop(0.3, '#004488');
+            gradient.addColorStop(0.7, '#002244');
+            gradient.addColorStop(1, '#001122');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Light rays
+            ctx.save();
+            for (let i = 0; i < 5; i++) {
+                const x = (i * 250) + Math.sin(time / 3000 + i) * 50;
+                const rayGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
+                rayGradient.addColorStop(0, 'rgba(255, 255, 200, 0.1)');
+                rayGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = rayGradient;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x + 150, 0);
+                ctx.lineTo(x + 100 + Math.sin(time / 2000) * 30, canvas.height * 0.7);
+                ctx.lineTo(x - 50 + Math.sin(time / 2000) * 30, canvas.height * 0.7);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Water plants
+            waterPlants.forEach(plant => {
+                plant.sway += 0.02;
+                const swayOffset = Math.sin(plant.sway) * 15;
+
+                ctx.save();
+                ctx.translate(plant.x, canvas.height);
+
+                // Draw plant
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(
+                    swayOffset, -plant.height / 2,
+                    swayOffset * 1.5, -plant.height
+                );
+                ctx.quadraticCurveTo(
+                    swayOffset + plant.width / 2, -plant.height + 20,
+                    plant.width / 2, 0
+                );
+                ctx.fillStyle = plant.color;
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Background fish
+            fishBackground.forEach(fish => {
+                fish.x -= fish.speed;
+                if (fish.x < -50) fish.x = canvas.width + 50;
+
+                const wobble = Math.sin(time / 200 + fish.x / 50) * 3;
+
+                ctx.save();
+                ctx.translate(fish.x, fish.y + wobble);
+                ctx.scale(-1, 1);
+
+                // Simple fish shape
+                ctx.fillStyle = fish.color;
+                ctx.globalAlpha = 0.4;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, fish.size, fish.size / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tail
+                ctx.beginPath();
+                ctx.moveTo(fish.size, 0);
+                ctx.lineTo(fish.size + fish.size / 2, -fish.size / 3);
+                ctx.lineTo(fish.size + fish.size / 2, fish.size / 3);
+                ctx.fill();
+
+                ctx.restore();
+            });
+
+            // Bubbles
+            if (Math.random() < 0.05) {
+                bubbles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height,
+                    size: 3 + Math.random() * 8,
+                    speed: 1 + Math.random() * 2,
+                    wobble: Math.random() * Math.PI * 2
+                });
+            }
+
+            bubbles.forEach((bubble, i) => {
+                bubble.y -= bubble.speed;
+                bubble.wobble += 0.1;
+                bubble.x += Math.sin(bubble.wobble) * 0.5;
+
+                if (bubble.y < -20) {
+                    bubbles.splice(i, 1);
+                    return;
+                }
+
+                ctx.beginPath();
+                ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.stroke();
+            });
+
+            // Sandy bottom
+            const sandGradient = ctx.createLinearGradient(0, canvas.height - 80, 0, canvas.height);
+            sandGradient.addColorStop(0, 'transparent');
+            sandGradient.addColorStop(0.3, '#3d2b1f');
+            sandGradient.addColorStop(1, '#2a1a10');
+            ctx.fillStyle = sandGradient;
+            ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+
+            // Rocks
+            for (let i = 0; i < 8; i++) {
+                const rockX = (i * 150) + 50;
+                const rockSize = 20 + (i % 3) * 15;
+                ctx.fillStyle = '#4a3728';
+                ctx.beginPath();
+                ctx.ellipse(rockX, canvas.height - 30, rockSize, rockSize / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Player fish position and animation
+        let playerX, playerY, playerTargetY;
+        let playerSwim = 0;
+
+        function drawPlayerFish(time) {
+            if (!playerFish) return;
+
+            playerSwim += 0.15;
+            const wobble = Math.sin(playerSwim) * 8;
+
+            // Smooth movement to target
+            playerY += (playerTargetY - playerY) * 0.05;
+
+            ctx.save();
+            ctx.translate(playerX, playerY + wobble);
+
+            // Fish body
+            const size = 40 + playerFish.size * 10;
+            ctx.fillStyle = playerFish.color;
+
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size, size / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tail
+            const tailWag = Math.sin(playerSwim * 2) * 10;
+            ctx.beginPath();
+            ctx.moveTo(-size, 0);
+            ctx.lineTo(-size - 30, -20 + tailWag);
+            ctx.lineTo(-size - 30, 20 + tailWag);
+            ctx.closePath();
+            ctx.fill();
+
+            // Fins
+            ctx.beginPath();
+            ctx.moveTo(0, -size / 2);
+            ctx.lineTo(10, -size / 2 - 20);
+            ctx.lineTo(-15, -size / 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(10, size / 3);
+            ctx.lineTo(20, size / 2 + 15);
+            ctx.lineTo(-5, size / 3);
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(size / 2, -5, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(size / 2 + 3, -5, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(size - 5, 5, 5, 0, Math.PI);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Encounter creature animation
+        let creatureX, creatureY, creatureSpeed;
+
+        function drawEncounterCreature(time) {
+            if (!encounterCreature) return;
+
+            const wobble = Math.sin(time / 200) * 5;
+            creatureX -= creatureSpeed;
+
+            ctx.save();
+            ctx.translate(creatureX, creatureY + wobble);
+
+            // Different drawing based on creature type
+            const size = 30 + encounterCreature.size * 15;
+
+            if (encounterCreature.isFish) {
+                ctx.scale(-1, 1);
+                ctx.fillStyle = encounterCreature.color || '#88aacc';
+
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size, size / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tail
+                const tailWag = Math.sin(time / 100) * 8;
+                ctx.beginPath();
+                ctx.moveTo(-size, 0);
+                ctx.lineTo(-size - 25, -15 + tailWag);
+                ctx.lineTo(-size - 25, 15 + tailWag);
+                ctx.closePath();
+                ctx.fill();
+
+                // Eye
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(size / 2, -3, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(size / 2 + 2, -3, 4, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw emoji for non-fish
+                ctx.font = `${size * 2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(encounterCreature.emoji, 0, 0);
+            }
+
+            ctx.restore();
+
+            // Return true if creature has passed
+            return creatureX < -100;
+        }
+
+        // Fish selection
+        function showFishSelect() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('fishSelectScreen').style.display = 'flex';
+
+            const container = document.getElementById('fishOptions');
+            container.innerHTML = '';
+
+            fishTypes.forEach(fish => {
+                const div = document.createElement('div');
+                div.className = 'fish-option';
+                div.innerHTML = `
+                    <span class="emoji">${fish.emoji}</span>
+                    <div class="name">${fish.name}</div>
+                    <div class="desc">${fish.desc}</div>
+                `;
+                div.onclick = () => selectFish(fish);
+                container.appendChild(div);
+            });
+        }
+
+        function selectFish(fish) {
+            playerFish = fish;
+            startGame();
+        }
+
+        function startGame() {
+            document.getElementById('fishSelectScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'flex';
+            document.getElementById('infoPanel').style.display = 'block';
+            document.body.classList.add('playing');
+
+            // Update info panel
+            document.getElementById('playerFishName').textContent = playerFish.name;
+
+            const dietInfo = document.getElementById('dietInfo');
+            dietInfo.innerHTML = playerFish.eats.map(e => {
+                const c = creatures.find(cr => cr.id === e);
+                return `<div class="info-line">${c ? c.emoji : '❓'} ${c ? c.name : e}</div>`;
+            }).join('');
+
+            const dangerInfo = document.getElementById('dangerInfo');
+            dangerInfo.innerHTML = playerFish.predators.map(p => {
+                const c = creatures.find(cr => cr.id === p);
+                return `<div class="info-line">${c ? c.emoji : '❓'} ${c ? c.name : p}</div>`;
+            }).join('') + '<div class="info-line">🪝 Fishing Lure</div>';
+
+            health = 100;
+            score = 0;
+            updateUI();
+
+            playerX = canvas.width * 0.25;
+            playerY = canvas.height / 2;
+            playerTargetY = playerY;
+
+            initBackground();
+            gameState = 'playing';
+
+            // Start encounter loop
+            setTimeout(triggerEncounter, 2000);
+        }
+
+        function updateUI() {
+            document.getElementById('healthFill').style.width = health + '%';
+            document.getElementById('score').textContent = score;
+        }
+
+        function triggerEncounter() {
+            if (gameState !== 'playing') return;
+
+            // Pick a random creature (weighted)
+            const possibleCreatures = creatures.filter(c => c.id !== playerFish.id);
+            currentEncounter = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
+            encounterCreature = currentEncounter;
+
+            creatureX = canvas.width + 100;
+            creatureY = 100 + Math.random() * (canvas.height - 300);
+            creatureSpeed = 2;
+
+            gameState = 'encounter';
+            showChoices();
+        }
+
+        function showChoices() {
+            const panel = document.getElementById('choicePanel');
+            const text = document.getElementById('encounterText');
+            const choices = document.getElementById('choices');
+
+            text.innerHTML = `${currentEncounter.emoji} A ${currentEncounter.name} appears!`;
+
+            choices.innerHTML = '';
+
+            // Add appropriate buttons
+            const eatBtn = document.createElement('button');
+            eatBtn.className = 'choice-btn choice-eat';
+            eatBtn.textContent = '🍽️ Eat It!';
+            eatBtn.onclick = () => makeChoice('eat');
+            choices.appendChild(eatBtn);
+
+            const ignoreBtn = document.createElement('button');
+            ignoreBtn.className = 'choice-btn choice-ignore';
+            ignoreBtn.textContent = '😐 Ignore';
+            ignoreBtn.onclick = () => makeChoice('ignore');
+            choices.appendChild(ignoreBtn);
+
+            const escapeDeepBtn = document.createElement('button');
+            escapeDeepBtn.className = 'choice-btn choice-escape-deep';
+            escapeDeepBtn.textContent = '⬇️ Dive Deep!';
+            escapeDeepBtn.onclick = () => makeChoice('escape_deep');
+            choices.appendChild(escapeDeepBtn);
+
+            const escapeShallowBtn = document.createElement('button');
+            escapeShallowBtn.className = 'choice-btn choice-escape-shallow';
+            escapeShallowBtn.textContent = '⬆️ Go Shallow!';
+            escapeShallowBtn.onclick = () => makeChoice('escape_shallow');
+            choices.appendChild(escapeShallowBtn);
+
+            panel.style.display = 'flex';
+        }
+
+        function makeChoice(choice) {
+            document.getElementById('choicePanel').style.display = 'none';
+
+            let result = { success: false, message: '', points: 0 };
+
+            const creature = currentEncounter;
+            const canEat = playerFish.eats.includes(creature.id);
+            const isPredator = playerFish.predators.includes(creature.id);
+            const isDanger = creature.isDanger;
+            const fromAbove = creature.fromAbove;
+
+            switch (choice) {
+                case 'eat':
+                    if (canEat) {
+                        result = { success: true, message: 'Yummy! 😋', points: 20 };
+                    } else if (isPredator) {
+                        result = { success: false, message: 'It ate YOU! 😱', points: -40 };
+                    } else if (isDanger) {
+                        result = { success: false, message: 'OUCH! You got hooked! 🪝', points: -50 };
+                    } else {
+                        result = { success: false, message: "Can't eat that! 🤢", points: -10 };
+                    }
+                    break;
+
+                case 'ignore':
+                    if (canEat) {
+                        result = { success: true, message: 'Missed a snack! 🤷', points: 0 };
+                    } else if (isPredator || isDanger) {
+                        result = { success: false, message: 'It got you! 😰', points: -30 };
+                    } else {
+                        result = { success: true, message: 'Safe choice! 👍', points: 5 };
+                    }
+                    break;
+
+                case 'escape_deep':
+                    if (fromAbove) {
+                        result = { success: true, message: 'Escaped! 🏊', points: 10 };
+                    } else if (isPredator || isDanger) {
+                        result = { success: true, message: 'Got away! 💨', points: 10 };
+                    } else if (canEat) {
+                        result = { success: true, message: 'Missed a meal! 🏃', points: -5 };
+                    } else {
+                        result = { success: true, message: "Didn't need to run! 😅", points: 0 };
+                    }
+                    playerTargetY = canvas.height - 150;
+                    break;
+
+                case 'escape_shallow':
+                    if (fromAbove) {
+                        result = { success: false, message: 'Swam right to it! 😱', points: -40 };
+                        playerTargetY = 100;
+                    } else if (isDanger) {
+                        // Hook is near surface
+                        result = { success: false, message: 'The hook was there! 🪝', points: -30 };
+                        playerTargetY = 100;
+                    } else if (isPredator) {
+                        result = { success: true, message: 'Escaped! 🏊', points: 10 };
+                        playerTargetY = 100;
+                    } else {
+                        result = { success: true, message: 'Safe! 👍', points: 0 };
+                        playerTargetY = 100;
+                    }
+                    break;
+            }
+
+            // Apply result
+            score += result.points;
+            if (result.points < 0) {
+                health += result.points; // Negative points = damage
+            }
+
+            if (score < 0) score = 0;
+            updateUI();
+
+            // Show result
+            showResult(result);
+
+            // Check game over
+            if (health <= 0) {
+                setTimeout(() => gameOver(), 1500);
+                return;
+            }
+
+            // Continue game
+            setTimeout(() => {
+                encounterCreature = null;
+                gameState = 'playing';
+                playerTargetY = canvas.height / 2;
+                setTimeout(triggerEncounter, 1500 + Math.random() * 2000);
+            }, 1500);
+        }
+
+        function showResult(result) {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = result.message;
+            resultEl.className = result.success ? 'result-good' : 'result-bad';
+            resultEl.style.display = 'block';
+
+            setTimeout(() => {
+                resultEl.style.display = 'none';
+            }, 1200);
+        }
+
+        function gameOver() {
+            gameState = 'gameover';
+            document.getElementById('ui').style.display = 'none';
+            document.getElementById('infoPanel').style.display = 'none';
+            document.getElementById('choicePanel').style.display = 'none';
+            document.body.classList.remove('playing');
+
+            const title = document.getElementById('gameOverTitle');
+            if (score >= 100) {
+                title.textContent = '🏆 Amazing! 🏆';
+                title.style.color = '#ffd93d';
+            } else if (score >= 50) {
+                title.textContent = '👍 Good Try! 👍';
+                title.style.color = '#4ecdc4';
+            } else {
+                title.textContent = '💀 Game Over! 💀';
+                title.style.color = '#ff6b6b';
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+            playerFish = null;
+            encounterCreature = null;
+        }
+
+        // Game loop
+        function gameLoop(time) {
+            drawBackground(time);
+
+            if (gameState === 'playing' || gameState === 'encounter') {
+                drawPlayerFish(time);
+
+                if (encounterCreature) {
+                    drawEncounterCreature(time);
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        initBackground();
+        gameLoop(0);
+    </script>
+</body>
+</html>

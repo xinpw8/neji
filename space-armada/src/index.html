@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Armada</title>
+
+    <!-- Google Font: Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/ui.css">
+    <link rel="stylesheet" href="./styles/station.css">
+    <link rel="stylesheet" href="./styles/combat.css">
+</head>
+<body>
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Crosshair -->
+    <div id="crosshair"><div class="dot"></div></div>
+
+    <!-- Lock Indicator -->
+    <div id="lockIndicator"><div class="lock-box"></div></div>
+
+    <!-- Message Display -->
+    <div id="message"></div>
+
+    <!-- HUD -->
+    <div id="ui"></div>
+
+    <!-- Weapon Info -->
+    <div id="weaponInfo"></div>
+
+    <!-- Target Info -->
+    <div id="targetInfo"></div>
+
+    <!-- Minimap / Scanner -->
+    <div id="minimap">
+        <canvas id="minimapCanvas"></canvas>
+        <div id="scannerSweep"></div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="startScreen">
+        <h1>SPACE ARMADA</h1>
+        <p class="subtitle">A Roguelike Space Adventure</p>
+        <p>Navigate the cosmos, trade goods, complete missions, and survive in a universe full of danger.</p>
+        <button id="startBtn" class="btn">LAUNCH</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <div class="stats"></div>
+        <button id="restartBtn" class="btn">TRY AGAIN</button>
+    </div>
+
+    <!-- Station Interface (hidden by default) -->
+    <div id="stationInterface"></div>
+
+    <!-- Main Game Module -->
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

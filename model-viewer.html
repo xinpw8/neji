@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ship Model Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a1a;
+            overflow: hidden;
+        }
+        #canvas-container {
+            width: 512px;
+            height: 512px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #model-name {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(0,150,255,0.8);
+        }
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #1a3a5a;
+            color: #fff;
+            border: 1px solid #3a6a9a;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2a4a6a;
+        }
+        #status {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="model-name">Loading...</div>
+    <div id="canvas-container"></div>
+    <div id="status"></div>
+    <div id="controls">
+        <button id="prevBtn">Previous</button>
+        <button id="nextBtn">Next</button>
+        <button id="autoBtn">Auto Cycle</button>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // All ship models
+        const MODEL_FILES = [
+            'Arada.glb',
+            'Azdara.glb',
+            'Azdgari Arada.glb',
+            'Azdgari Warship.glb',
+            'Cargo Freighter.glb',
+            'Crescent Fighter.glb',
+            'Crescent Warship.glb',
+            'Emalgha Fighter.glb',
+            'Emalgha Freighter.glb',
+            'Escape Pod.glb',
+            'Freight Courier.glb',
+            'Helian.glb',
+            'Igadzra Arada.glb',
+            'Igazra.glb',
+            'Krait.glb',
+            'Lazira.glb',
+            'Miranu Courier.glb',
+            'Miranu Freighter II.glb',
+            'Miranu Freighter.glb',
+            'Miranu Gunship.glb',
+            'Scoutship.glb',
+            'Shuttle.glb',
+            'Turncoat.glb',
+            'UE Carrier.glb',
+            'UE Fighter.glb',
+            'UE Freighter.glb',
+            'Voinian Cruiser.glb',
+            'Voinian Dreadnaught.glb',
+            'Voinian Frigate.glb',
+            'Voinian Heavy Fighter.glb'
+        ];
+
+        const MODELS_PATH = './evo_assets/models/';
+
+        let scene, camera, renderer;
+        let currentModelIndex = 0;
+        let currentModel = null;
+        let loader;
+        let autoInterval = null;
+
+        // Initialize
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+
+            // Orthographic camera (top-down view like the game)
+            const viewSize = 100;
+            camera = new THREE.OrthographicCamera(
+                -viewSize, viewSize,
+                viewSize, -viewSize,
+                1, 2000
+            );
+            camera.position.set(0, 500, 0);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(512, 512);
+            renderer.setPixelRatio(1);
+            container.appendChild(renderer.domElement);
+
+            // Lighting - match game lighting
+            const ambientLight = new THREE.AmbientLight(0x404050, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight.position.set(100, 500, 100);
+            scene.add(directionalLight);
+
+            const fillLight = new THREE.DirectionalLight(0x8080ff, 0.4);
+            fillLight.position.set(-100, 300, -100);
+            scene.add(fillLight);
+
+            // GLTF loader
+            loader = new GLTFLoader();
+
+            // Load first model
+            loadModel(0);
+
+            // Controls
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                stopAuto();
+                currentModelIndex = (currentModelIndex - 1 + MODEL_FILES.length) % MODEL_FILES.length;
+                loadModel(currentModelIndex);
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                stopAuto();
+                currentModelIndex = (currentModelIndex + 1) % MODEL_FILES.length;
+                loadModel(currentModelIndex);
+            });
+
+            document.getElementById('autoBtn').addEventListener('click', toggleAuto);
+
+            // Animation loop
+            animate();
+        }
+
+        function loadModel(index) {
+            const modelFile = MODEL_FILES[index];
+            const modelPath = MODELS_PATH + modelFile;
+
+            document.getElementById('model-name').textContent = `Loading ${modelFile}...`;
+            document.getElementById('status').textContent = `Model ${index + 1} of ${MODEL_FILES.length}`;
+
+            // Remove previous model
+            if (currentModel) {
+                scene.remove(currentModel);
+                currentModel = null;
+            }
+
+            loader.load(
+                modelPath,
+                (gltf) => {
+                    currentModel = gltf.scene;
+
+                    // Rotate to match game view (top-down, nose pointing up on screen)
+                    currentModel.rotation.x = -Math.PI / 2;
+
+                    // Calculate bounding box and scale to fit view
+                    const box = new THREE.Box3().setFromObject(currentModel);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+
+                    // Scale to fit nicely in view (about 60% of viewport)
+                    const targetSize = 120;
+                    const scale = targetSize / maxDim;
+                    currentModel.scale.setScalar(scale);
+
+                    // Center the model
+                    box.setFromObject(currentModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    currentModel.position.sub(center);
+
+                    scene.add(currentModel);
+
+                    document.getElementById('model-name').textContent = modelFile.replace('.glb', '');
+
+                    // Signal model is ready for screenshot
+                    window.modelReady = true;
+                    window.currentModelName = modelFile.replace('.glb', '');
+                },
+                (progress) => {
+                    // Loading progress
+                },
+                (error) => {
+                    console.error('Error loading model:', error);
+                    document.getElementById('model-name').textContent = `Error loading ${modelFile}`;
+                    window.modelReady = true; // Still signal ready so we can continue
+                    window.currentModelName = modelFile.replace('.glb', '');
+                }
+            );
+
+            window.modelReady = false;
+        }
+
+        function toggleAuto() {
+            if (autoInterval) {
+                stopAuto();
+            } else {
+                autoInterval = setInterval(() => {
+                    currentModelIndex = (currentModelIndex + 1) % MODEL_FILES.length;
+                    loadModel(currentModelIndex);
+                }, 2000);
+                document.getElementById('autoBtn').textContent = 'Stop Auto';
+            }
+        }
+
+        function stopAuto() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                document.getElementById('autoBtn').textContent = 'Auto Cycle';
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Expose functions for puppeteer control
+        window.loadModelByIndex = function(index) {
+            window.modelReady = false;
+            currentModelIndex = index;
+            loadModel(index);
+        };
+
+        window.getModelCount = function() {
+            return MODEL_FILES.length;
+        };
+
+        window.getModelName = function(index) {
+            return MODEL_FILES[index].replace('.glb', '');
+        };
+
+        window.isModelReady = function() {
+            return window.modelReady === true;
+        };
+
+        window.getCanvas = function() {
+            return renderer.domElement;
+        };
+
+        init();
+    </script>
+</body>
+</html>
