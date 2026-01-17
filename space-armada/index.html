@@ -6771,6 +6771,10 @@
                 }
                 return true;
             });
+
+            // Keep window references in sync for AI/testing
+            window.enemies = enemies;
+            window.stations = stations;
         }
 
         // Main procedural update - called every frame
@@ -6875,6 +6879,10 @@
             station.mesh.position.set(station.x, 0, station.y);
             scene.add(station.mesh);
             stations.push(station);
+
+            // Sync window references for AI/testing
+            window.enemies = enemies;
+            window.stations = stations;
         }
 
         // Legacy function kept for compatibility - now does nothing
@@ -7165,6 +7173,8 @@
             window.enemies = enemies;  // Expose for testing
             window.projectiles = projectiles;  // Expose for testing
             window.gameRunning = gameRunning;  // Expose for testing
+            window.playerState = playerState;  // Expose for AI/testing
+            window.stations = stations;  // Expose for AI/testing
 
             showMessage('LAUNCH SUCCESSFUL - EXPLORE THE UNIVERSE');
         }
@@ -7870,6 +7880,7 @@
                 }
                 return true;
             });
+            window.projectiles = projectiles;  // Keep window reference in sync
         }
 
         function updatePickups(dt) {
